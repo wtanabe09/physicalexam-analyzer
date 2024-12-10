@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+  node:
+    build: ./dockerfiles/front/
+    volumes:
+      - ./react-app:/usr/src/app
+    command: sh -c 'yarn start'
+    ports:
+      - '3000:3000'
+      - '3001:3001' # buildテスト用
