@@ -1,0 +1,38 @@
+name: s3-deploy-sample
+on:
+  pull_request:
+    branches:
+      - main
+    types: [opened, synchronize, closed] #他のjobがある想定でこの設定にしている
+
+jobs:
+  UploadStaticFiles:
+    name: Upload static files
+    if: github.event.pull_request.merged == true #マージされたときのみこのjobを実行する
+    runs-on: ubuntu-latest
+    env:
+      REACT_APP_BACKEND_URL: ${{ secrets.REACT_APP_BACKEND_URL }}
+    
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+          
+      - name: Install dependencies
+        run: npm install
+        
+      - name: Build
+        run: npm run build
+      
+      - uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_DEV_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_DEV_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-3
+      
+      - name: S3 sync
+        working-directory: build
+        run: aws s3 sync . s3://${{secrets.AWS_BUCKET_NAME}} --delete --exclude "README.md"
