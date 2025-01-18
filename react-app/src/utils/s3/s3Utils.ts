@@ -1,73 +1,60 @@
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { ComboboxItem } from "@mantine/core";
 
-// APIリクエストを送信して動画リストを取得
-const accesskey = process.env.REACT_APP_AWS_ACCESS_KEY as string;
-const secretaccesskey = process.env.REACT_APP_AWS_SECRET_KEY as string;
-// const region = process.env.REACT_APP_AWS_REGION as string;
-// export const baseBucket = process.env.REACT_APP_DATA_BUCKET_NAME as string;
+const getPresignedUrl = process.env.REACT_APP_API_GET_PRESIGNED_URL;
 
-// // TEST用 OSAKA region
-const region = process.env.REACT_APP_TEST_AWS_REGION as string;
-export const baseBucket = process.env.REACT_APP_TEST_DATA_BUCKET_NAME as string;
-
-export const videoBucketName = `${baseBucket}-mp4`;
-export const csvBucketName = `${baseBucket}-csv`;
-
-export const createS3Client = () => {
-  return new S3Client({
-    region: region,
-    credentials: {
-      accessKeyId: accesskey,
-      secretAccessKey: secretaccesskey,
-    },
-  });
+export const fetchSessionData = async () => {
+  const startSessionUrl = getPresignedUrl + "?requestType=start-session";
+  const res = await fetch(startSessionUrl);
+  const data = await res.json();
+  return data;
 }
 
-// 実装課題：Lambdaを介したファイルアップロードに変更したい．
-export const uploadBlobToS3 = async (blob: Blob, filename: string) => {
-  const fileExtention = filename.split(".")[1]; // csv or mp4
-  const dataBucket = baseBucket + "-" + fileExtention; // physicalexam-data-csv, physicalexam-data-mp4
-
-  const client = createS3Client();
+// "get", "put" メソッドで使用
+export const fetchBlob = async (
+  methodType: string, // get or put
+  blob: Blob | null, selectedUser: string, selectedTechnique: string,
+  timestamp: string, sessionId: string, mediaType: string, extension: string
+) => {
+  const fetchUrl = getPresignedUrl + `?requestType=${methodType.toLowerCase()}`; // get or put
 
   try {
-    console.log("upload start: " + filename);
-    const res = await client.send(
-      new PutObjectCommand({
-        Bucket: dataBucket,
-        Key: filename,
-        Body: blob,
+    // Presigned url を取得
+    const res = await fetch(fetchUrl, {
+      method: 'POST',
+      body: JSON.stringify({
+        userId: selectedUser,
+        techniqueId: selectedTechnique,
+        timestamp: timestamp,
+        sessionId: sessionId,
+        extention: extension,
+        mediaType: mediaType,
+      }),
+    });
+    const { presigned_url } = await res.json();
+
+    // Presigned url に対してfetch
+    if (methodType === 'GET' || (methodType === 'PUT' && blob != null)) {
+
+      const fetchResponse = await fetch(presigned_url, {
+        method: methodType,
+        body: blob,
+        headers: {'Content-Type': blob? blob.type : 'application/json'}
       })
-    );
-    console.log("upload done: " + filename, res);
+      console.log("fetch object result" + fetchResponse);
+      return fetchResponse;
+    }
   } catch(error) {
-    console.log(error);
+    console.error(error);
   }
 }
 
-export const formatWithPadding = (value: number | String) => String(value).padStart(2, '0');
-
-export const getSessionFilename = (selectedUser: ComboboxItem, selectedTechnique: ComboboxItem) => {
-  const userId = formatWithPadding(selectedUser.value);
-  const techniqueId = formatWithPadding(selectedTechnique?.value);
-  const dateTime = getFormattedDateTime();
-  const fileName = `${userId}-${techniqueId}-${dateTime}`; // ex: 00-00-2024xxxx
-  return fileName;
-}
-
-export const getFormattedDate = () => {
-  const now = new Date();
-  const year = String(now.getFullYear());
-  const month = formatWithPadding(now.getMonth() + 1)
-  const date = formatWithPadding(now.getDate());
-  return `${year}${month}${date}`;
-}
-
-export const getFormattedDateTime = () => {
-  const now = new Date();
-  const hours = formatWithPadding(now.getHours());
-  const minutes = formatWithPadding(now.getMinutes());
-  const seconds = formatWithPadding(now.getSeconds());
-  return `${getFormattedDate()}${hours}${minutes}${seconds}`;
+export const fetchObjectKeys = async (userId: string) => {
+  const getObjectKeysUrl = getPresignedUrl + "?requestType=get-keys";
+  const res = await fetch(getObjectKeysUrl, {
+    method: 'POST',
+    body: JSON.stringify({
+      userId: userId
+    }),
+  });
+  const { keys } = await res.json();
+  return keys
 }

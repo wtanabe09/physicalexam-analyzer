@@ -5,7 +5,6 @@ import { NAN_ARRAY } from "../../consts/consts";
 
 export const useCsvChunk = (csvBlob: Blob, landmarkType: LandmarkType) => {
   const [landmarkChunk, setLandmarkChunk] = useState<FormattedCsvType | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
   // Read the blob as text
   const readBlobAsText = useCallback((blob: Blob): Promise<string> => {
@@ -45,18 +44,16 @@ export const useCsvChunk = (csvBlob: Blob, landmarkType: LandmarkType) => {
     const fetchCsv = async () => {
       if (!csvBlob) {
         setLandmarkChunk(null);
-        setError(null);
         return;
       }
       try {
         const csv = await blobToCsv(csvBlob);
         if (isMounted) {
           setLandmarkChunk(csv);
-          setError(null);
         }
       } catch (err) {
+        console.error(err);
         if (isMounted) {
-          setError(err instanceof Error ? err.message : String(err));
           setLandmarkChunk(null);
         }
       }
@@ -69,7 +66,7 @@ export const useCsvChunk = (csvBlob: Blob, landmarkType: LandmarkType) => {
     };
   }, [csvBlob, blobToCsv]);
 
-  return { landmarkChunk, error }
+  return { landmarkChunk }
 }
 
 export const createRowData = (timestamp: number, landmarks: NormalizedLandmark[][]) => {

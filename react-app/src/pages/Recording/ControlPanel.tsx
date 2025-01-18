@@ -1,41 +1,30 @@
 import { techniqueOptions, userOptions } from "../../consts/consts";
-import { LoadingStatus } from "../../consts/types";
 import { RecordingButton } from "../../utils/video/RecordingButton";
 import { ComboboxItem, Select } from "@mantine/core";
 import { ToggleButton } from "../../utils/uiux/ToggleButton";
-import { useEffect, useState } from "react";
-import { getSessionFilename } from "../../utils/s3/s3Utils";
 import { LinkButton } from "../../utils/uiux/LinkButton";
 
 interface ControlPanelProps {
+  selectedUser: ComboboxItem | null;
+  setUserValue: React.Dispatch<React.SetStateAction<ComboboxItem | null>>;
+  selectedTechnique: ComboboxItem | null;
+  setTechniqueValue: React.Dispatch<React.SetStateAction<ComboboxItem | null>>;
   isRecording: boolean;
-  loadingStatus: LoadingStatus;
   startRecording: () => void;
   stopRecording: () => void;
   isDisplayPosture: boolean;
   setIsDisplayPosture: React.Dispatch<React.SetStateAction<boolean>>;
   isLocalSave: boolean;
   setIsLocalSave: React.Dispatch<React.SetStateAction<boolean>>;
-  sessionName: String | null;
-  setSessionName: React.Dispatch<React.SetStateAction<String | null>>;
 }
 
 export const ControlPanel: React.FC<ControlPanelProps> = ({
-  isRecording, loadingStatus, startRecording, stopRecording,
+  selectedUser, setUserValue, selectedTechnique, setTechniqueValue,
+  isRecording, startRecording, stopRecording,
   isDisplayPosture, setIsDisplayPosture,
-  isLocalSave,setIsLocalSave,
-  sessionName, setSessionName
+  isLocalSave, setIsLocalSave,
 }) => {
-  const [selectedUser, setUserValue] = useState<ComboboxItem | null>(null);
-  const [selectedTechnique, setTechniqueValue] = useState<ComboboxItem | null>(null);
-
-  useEffect(() => {
-    if (selectedUser && selectedTechnique) {
-      setSessionName(getSessionFilename(selectedUser, selectedTechnique));
-    } else {
-      setSessionName(null);
-    }
-  }, [selectedUser, selectedTechnique]);
+  
 
   return (
     <div className="container p-2">
@@ -45,7 +34,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
       <div className="select-session-container">
         <h2 className="text-lg font-semibold mb-2">演習者選択</h2>
         <div>
-          {sessionName ? 
+          {selectedUser && selectedTechnique ? 
             <p className="text-slate-400 mb-2">録画は保存されます</p> :
             <p className="text-slate-400 mb-2">ユーザーと手技を選択してください</p>
           }

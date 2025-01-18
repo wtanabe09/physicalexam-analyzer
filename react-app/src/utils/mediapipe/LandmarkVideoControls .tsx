@@ -1,15 +1,11 @@
 import { Button, Checkbox } from "@mantine/core";
 import { CiPlay1, CiPause1 } from "react-icons/ci";
 import React from "react";
-import { ToggleButton } from "../uiux/ToggleButton";
-import { LoadingStatus } from "../../consts/types";
 import { useLandmarkVideoControl } from "./useLandmarkVideoControl";
-import { ZoomLevelBar } from "../uiux/ZoomLevelBar";
 
 interface VideoControlsProps {
   videoRef: React.RefObject<HTMLVideoElement>;
   recordedVideoBlob: Blob;
-  videoLoadState: LoadingStatus;
   isDisplayPosture: boolean;
   videoCurrentTime: number;
   handleSeekChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
@@ -18,10 +14,8 @@ interface VideoControlsProps {
 export const LandmarkVideoControls: React.FC<VideoControlsProps> = React.memo(({ 
   videoRef,
   recordedVideoBlob,
-  videoLoadState,
   videoCurrentTime,
   handleSeekChange,
-  
 }) => {
 
   const {
@@ -31,7 +25,7 @@ export const LandmarkVideoControls: React.FC<VideoControlsProps> = React.memo(({
     toggleLooping,
   } = useLandmarkVideoControl({videoRef, videoBlob: recordedVideoBlob});
 
-  if (!videoRef.current || videoLoadState === 'idle' || videoLoadState === 'loading') {
+  if (!videoRef.current || videoRef.current.HAVE_NOTHING) {
     return null;
   }
 

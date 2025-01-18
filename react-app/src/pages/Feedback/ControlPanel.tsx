@@ -1,5 +1,5 @@
 import { PasswordInput, Select } from "@mantine/core"
-import { dateOptions, userOptions } from "../../consts/consts";
+import { dateOptions, SelectBoxOption, userOptions } from "../../consts/consts";
 import { LinkButton } from "../../utils/uiux/LinkButton";
 import { GetVideoListButton } from "../../utils/video/GetVideoListButton";
 
@@ -11,21 +11,25 @@ interface Props {
   password: string;
   setPassword: (value: string) => void;
   isCorrectPassword: boolean;
-  onGetVideo: () => void;
+  onGetObjectKeys: () => void;
   videoOptions: any[];
   selectedVideo: any;
-  setVideoValue: (option: any) => void;
-  placeholder: string;
+  setVideoKey: (option: any) => void;
 }
 
 export const ControlPanel: React.FC<Props> = ({
   selectedDate, setDateValue,
   selectedUser, setUserValue,
   password, setPassword,
-  isCorrectPassword, onGetVideo,
-  videoOptions, selectedVideo, setVideoValue,
-  placeholder
+  isCorrectPassword, onGetObjectKeys,
+  videoOptions, selectedVideo, setVideoKey,
 }) => {
+
+  const getVideoPlaceholder = (videoOptions: SelectBoxOption[], isCorrect: boolean) => {
+    return videoOptions.length > 0 && isCorrect
+      ? "ビデオを選択"
+      : "ビデオは選択できません";
+  };
 
   return (
     <div className="bg-white p-2">
@@ -58,14 +62,14 @@ export const ControlPanel: React.FC<Props> = ({
           className="w-full"
           selectedUser={selectedUser}
           isCorrectPassword={isCorrectPassword}
-          onGetVideo={onGetVideo}
+          onGetVideo={onGetObjectKeys}
         />
         <Select
           className="w-full"
           data={videoOptions}
           value={selectedVideo ? selectedVideo.value : null}
-          onChange={(_value, option) => setVideoValue(option)}
-          placeholder={placeholder}
+          onChange={(_value, option) => setVideoKey(option)}
+          placeholder={getVideoPlaceholder(videoOptions, isCorrectPassword)}
         />
       </div>
     </div>

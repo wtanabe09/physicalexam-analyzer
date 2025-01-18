@@ -1,48 +1,45 @@
 import { useEffect, useState } from "react";
-import { AppShell, ComboboxItem } from "@mantine/core";
+import { AppShell, ComboboxItem, Loader } from "@mantine/core";
 import { useCsvChunk } from "../../utils/s3/useCsvChunk";
-import { useS3Data } from "../../utils/s3/useS3Data";
+import { useS3Downloader } from "../../utils/s3/useS3Downloader";
 import { ControlPanel } from "./ControlPanel";
 import { usePassword } from "../../utils/uiux/usePassword";
 import { NAVBAR_WIDTH } from "../../consts/consts";
 import { useNavigate } from "react-router-dom";
-import { useGetVideoListButton } from "../../utils/video/useGetVideoListButton";
-import { LoaderCenter } from "../../utils/uiux/LoaderCenter";
+import { useObjectKeys } from "../../utils/video/useObjectKeys";
 
 export const Feedback = () => {
   const [selectedDate, setDateValue] = useState<ComboboxItem|null>(null);
   const [selectedUser, setUserValue] = useState<ComboboxItem|null>(null);
-  const [selectedVideo, setVideoValue] = useState<ComboboxItem|null>(null);
-  const [password, setPassword] = useState('');
+  const [selectedVideoKey, setVideoKey] = useState<ComboboxItem|null>(null);
 
+  const [password, setPassword] = useState('');
   const { isCorrectPass } = usePassword(selectedUser!, password);
-  const { options, onGetVideo } = useGetVideoListButton({ selectedDate, selectedUser, isCorrectPass }); // ユーザー毎の動画の一覧を取得
-  const { videoBlob, csvBlobPose, csvBlobHand, csvBlobHandFrontCam, placeholder, videoLoadState } = useS3Data(options, selectedVideo, isCorrectPass);
+
+  const { objectKeys, onGetObjectKeys } = useObjectKeys({ selectedDate, selectedUser, isCorrectPass }); // ユーザー毎の動画の一覧を取得
+  const { videoBlob, csvBlobPose, csvBlobHand, csvBlobHandFrontCam } = useS3Downloader(selectedVideoKey, isCorrectPass);
   
-  const { landmarkChunk: landmarkChunkPose, error: errorPose } = useCsvChunk(csvBlobPose!, 'pose');
-  const { landmarkChunk: landmarkChunkHand, error: errorHand } = useCsvChunk(csvBlobHand!, 'hand');
-  const { landmarkChunk: landmarkChunkHandFrontCam, error: errorHandFrontCam } = useCsvChunk(csvBlobHandFrontCam!, 'hand');
-  if (errorPose) console.error("Error processing CSV:", errorPose);
-  if (errorHand) console.error("Error processing CSV:", errorHand);
-  if (errorHandFrontCam) console.error("Error processing CSV:", errorHandFrontCam);
+  const { landmarkChunk: landmarkChunkPose } = useCsvChunk(csvBlobPose!, 'pose');
+  const { landmarkChunk: landmarkChunkHand } = useCsvChunk(csvBlobHand!, 'hand');
+  const { landmarkChunk: landmarkChunkHandFrontCam } = useCsvChunk(csvBlobHandFrontCam!, 'hand');
 
   const navigate = useNavigate();
   useEffect(() => {
-    console.log("navigation standby", videoLoadState);
-    if(videoBlob && landmarkChunkPose && landmarkChunkHand) {
+    console.log("navigation standby");
+
+    if (videoBlob && landmarkChunkPose && landmarkChunkHand && landmarkChunkHandFrontCam) {
       navigate("/video", { state: {
         videoBlob: videoBlob,
-        loadingStatus: videoLoadState,
         poseLandmarks: landmarkChunkPose,
         handLandmarksTopCamera: landmarkChunkHand,
         handLandmarksFrontCamera: landmarkChunkHandFrontCam,
       }});
     }
-  }, [videoLoadState, videoBlob, landmarkChunkPose, landmarkChunkHand]);
+  }, [videoBlob, landmarkChunkPose, landmarkChunkHand, landmarkChunkHandFrontCam, navigate]);
 
   useEffect(() => {
-    if (options.length === 0) {setVideoValue(null)}
-  }, [options]);
+    if (objectKeys.length === 0) {setVideoKey(null)}
+  }, [objectKeys]);
 
 
   return(
@@ -60,15 +57,16 @@ export const Feedback = () => {
           password={password}
           setPassword={setPassword}
           isCorrectPassword={isCorrectPass}
-          onGetVideo={onGetVideo}
-          videoOptions={options}
-          selectedVideo={selectedVideo}
-          setVideoValue={setVideoValue}
-          placeholder={placeholder}
+          onGetObjectKeys={onGetObjectKeys}
+          videoOptions={objectKeys}
+          selectedVideo={selectedVideoKey}
+          setVideoKey={setVideoKey}
         />
       </AppShell.Navbar>
-      <AppShell.Main>
-        <LoaderCenter status={videoLoadState} />
+      <AppShell.Main p={'lg'}>
+        {selectedVideoKey && !videoBlob && (
+          <Loader/>
+        )}
       </AppShell.Main>
     </AppShell>
   );

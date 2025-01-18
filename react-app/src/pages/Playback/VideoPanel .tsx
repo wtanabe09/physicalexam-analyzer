@@ -1,7 +1,6 @@
 import { useRef } from "react"
-import { useState } from "react"
-import { ClipRegion, LoadingStatus } from "../../consts/types"
-import { CameraRegions, CamRegion, FRAMESIZE } from "../../consts/consts"
+import { ClipRegion } from "../../consts/types"
+import { CameraRegions, FRAMESIZE } from "../../consts/consts"
 import { LandmarkVideo } from "../../utils/mediapipe/LandmarkVideo"
 import { HiddenVideo } from "../../utils/video/HiddenVideo"
 import { LandmarkVideoControls } from "../../utils/mediapipe/LandmarkVideoControls "
@@ -13,7 +12,6 @@ import { Title } from "@mantine/core"
 
 interface Props {
   videoBlob: Blob;
-  loadingStatus: LoadingStatus;
   poseLandmarks: LandmarkChunk,
   handLandmarksTopCamera: LandmarkChunk,
   handLandmarksFrontCamera: LandmarkChunk,
@@ -25,22 +23,21 @@ interface Props {
 }
 
 export const VideoPanel: React.FC<Props> = ({
-  videoBlob, loadingStatus,
+  videoBlob,
   poseLandmarks, handLandmarksTopCamera, handLandmarksFrontCamera,
   heatmapLandmarks, heatmapCamera,
-  isDisplayPosture, zoomLevelTopCam,zoomLevelFrontCam,
+  isDisplayPosture, zoomLevelTopCam, zoomLevelFrontCam,
 }) => {
   const isMobile = useMediaQuery('(max-width: 768px)');
   const canvasWidth = isMobile ? window.innerWidth : FRAMESIZE.CANVAS.WIDTH;
   const canvasHeight = isMobile ? window.innerWidth * (FRAMESIZE.CANVAS.HEIGHT / FRAMESIZE.CANVAS.WIDTH) : FRAMESIZE.CANVAS.HEIGHT;
 
   const videoRef = useRef<HTMLVideoElement>(null);
-  const {currentTime, handleSeekChange} = useVideoSource(videoRef, videoBlob);
+  const { currentTime, handleSeekChange } = useVideoSource(videoRef, videoBlob);
 
   return (
     <div className="contaienr p-5">
       <h1 className="font-semibold mb-2">プレイバック</h1>
-      {loadingStatus === "loaded" && (
         <div>
           <HiddenVideo
             ref={videoRef}
@@ -52,7 +49,6 @@ export const VideoPanel: React.FC<Props> = ({
               <Title order={3} className="font-semibold mb-2">(1) 横カメラ</Title>
               <LandmarkVideo
                 videoRef={videoRef}
-                videoLoadState={loadingStatus}
                 landmarkChunk={poseLandmarks}
                 landmarkType="pose"
                 width={canvasWidth} 
@@ -66,7 +62,6 @@ export const VideoPanel: React.FC<Props> = ({
               <Title order={3} className="font-semibold mb-2">(2) 上カメラ</Title>
               <LandmarkVideo
                 videoRef={videoRef}
-                videoLoadState={loadingStatus}
                 landmarkChunk={handLandmarksTopCamera}
                 landmarkType="hand"
                 width={canvasWidth}
@@ -80,7 +75,6 @@ export const VideoPanel: React.FC<Props> = ({
               <Title order={3} className="font-semibold mb-2">(3) 患者カメラ</Title>
               <LandmarkVideo
                 videoRef={videoRef}
-                videoLoadState={loadingStatus}
                 landmarkChunk={handLandmarksFrontCamera}
                 landmarkType="hand_patient_camera"
                 width={canvasWidth} 
@@ -104,14 +98,11 @@ export const VideoPanel: React.FC<Props> = ({
           <LandmarkVideoControls
             videoRef={videoRef}
             recordedVideoBlob={videoBlob!}
-            videoLoadState={loadingStatus}
             isDisplayPosture={isDisplayPosture}
             videoCurrentTime={currentTime}
             handleSeekChange={handleSeekChange}
           />
-          
         </div>
-      )}  
   </div>
   )
 }

@@ -15,9 +15,9 @@ interface Props {
 export const HeatmapVideo: React.FC<Props> = ({ originVideoRef, landmarks, canvasWidth, canvasHeight, clipRegion }) => {
   const sourceCanvasRef = useRef<HTMLCanvasElement>(null);
   const heatmapCanvasRef = useRef<HTMLCanvasElement>(null);
-  const heatmapWidth = Math.floor(canvasWidth / 13);
-  const heatmapHeight = Math.floor(canvasHeight / 13);
-  const heatmapArray = useHeatmap(landmarks, heatmapWidth, heatmapHeight);
+  const separate = 13;
+  const heatmapCanvas = {width: Math.floor(canvasWidth / separate), height: Math.floor(canvasHeight / separate)}
+  const heatmapArray = useHeatmap(landmarks, heatmapCanvas.width, heatmapCanvas.height);
   useHeatmapRender({originVideoRef, sourceCanvasRef, heatmapCanvasRef, heatmapArray});
   
   return (

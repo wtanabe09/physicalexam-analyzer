@@ -4,60 +4,52 @@ StreamからMediaRecorderを生成し，録画を行う.
 */
 
 import { useCallback, useRef, useState } from "react";
-import { LoadingStatus } from "../../consts/types";
-import { uploadBlobToS3 } from "../s3/s3Utils";
 import { downloadBlob } from "./blobUtils";
+import { ComboboxItem } from "@mantine/core";
 
 interface StreamProps {
   stream: MediaStream | null;
-  sessionName: String | null;
+  selectedUser: ComboboxItem | null;
+  selectedTechnique: ComboboxItem | null;
   isLocalSave: boolean;
 }
 
 type ReturnValues = {
   recordedBlob: Blob | null,
   isRecording: boolean,
-  loadingStatus: LoadingStatus,
   startRecording: () => void,
   stopRecording: () => void
 };
 
 export const useRecorder = ({
-  stream, sessionName, isLocalSave,
+  stream, selectedUser, selectedTechnique, isLocalSave,
 }: StreamProps): ReturnValues => {
   const recorderRef = useRef<MediaRecorder | null>(null);
   const mediaChunksRef = useRef<Blob[]>([]);
   const [isRecording, setIsRecording] = useState<boolean>(false);
   const [recordedBlob, setRecordedBlob] = useState<Blob|null>(null);
-  const [loadingStatus, setLoadingStatus] = useState<LoadingStatus>('idle');
 
   const handleDataAvailable = useCallback((event: BlobEvent) => {
     if (event.data.size > 0) mediaChunksRef.current.push(event.data);
   }, []);
 
   const handleStop = useCallback(() => {
-    setLoadingStatus('loading');
 
     if (mediaChunksRef.current.length < 1) return;
     const blob = new Blob(mediaChunksRef.current, { type: 'video/mp4' });
     setRecordedBlob(blob);
     mediaChunksRef.current = [];
-    
-    setLoadingStatus('loaded');
 
-    if (blob && sessionName) {
-      const uploadFileName = sessionName + ".mp4";
-      uploadBlobToS3(blob, uploadFileName);
-      if (isLocalSave) downloadBlob(blob, "video.mp4");
+    if (blob && selectedUser && selectedTechnique) {
+      if (isLocalSave) downloadBlob(blob, `user${selectedUser}-session${selectedTechnique}.mp4`);
     }
     
-  }, [isLocalSave, sessionName]);
+  }, [isLocalSave, selectedTechnique, selectedUser]);
 
   // Recordingボタンがクリックされたら実行．csvデータ，動画データの記録を開始する．
   const startRecording = useCallback(() => {
     if (!stream) {
       console.error('No stream available');
-      setLoadingStatus('error');
       return;
     }
 
@@ -70,7 +62,6 @@ export const useRecorder = ({
       setIsRecording(true);
     } catch(err) {
       console.error('Failed to start recording:', err);
-      setLoadingStatus('error');
     }
 
   }, [stream, handleDataAvailable, handleStop]);
@@ -84,5 +75,5 @@ export const useRecorder = ({
   }, [isRecording]);
 
 
-  return {recordedBlob, isRecording, loadingStatus, startRecording, stopRecording};
+  return {recordedBlob, isRecording, startRecording, stopRecording};
 }

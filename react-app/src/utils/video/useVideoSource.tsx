@@ -7,14 +7,11 @@ export const useVideoSource = (videoRef: React.RefObject<HTMLVideoElement>, sour
   useEffect(() => {
     const video = videoRef.current;
     if (!video || !source) return;
-    let isMounted = true;
 
-    let cleanup: (() => void) | undefined;
     const setVideoSource = async () => {
       if (source instanceof Blob) {
         const blobUrl = URL.createObjectURL(source);
         video.src = blobUrl;
-        cleanup = () => URL.revokeObjectURL(blobUrl);
       } else {
         video.srcObject = source;
       }
@@ -23,7 +20,7 @@ export const useVideoSource = (videoRef: React.RefObject<HTMLVideoElement>, sour
         await new Promise((resolve) => {
           video.onloadedmetadata = resolve;
         });
-        if (isMounted) await video.play();
+        await video.play();
       } catch (error) {
         console.error("Error playing video:", error);
       }
@@ -38,12 +35,11 @@ export const useVideoSource = (videoRef: React.RefObject<HTMLVideoElement>, sour
     video.addEventListener('timeupdate', updateCurrentTime);
     
     return () => {
-      isMounted = false;
       video.pause();
       video.src = '';
       video.srcObject = null;
       video.removeEventListener('timeupdate', updateCurrentTime);
-      cleanup?.();
+      URL.revokeObjectURL(video.src);
     }
   }, [videoRef, source]);
 
