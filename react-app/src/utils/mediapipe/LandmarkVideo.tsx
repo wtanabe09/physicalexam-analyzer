@@ -1,11 +1,10 @@
 import { useRef } from "react";
-import { ClipRegion, LandmarkType, LoadingStatus, MyLandmarkType } from "../../consts/types";
+import { ClipRegion, LandmarkType, MyLandmarkType } from "../../consts/types";
 import { ClippedVideo } from "../video/ClippedVideo";
 import { useLandmarkRender } from "./useLandmarkRender";
 
 interface Props {
   videoRef: React.RefObject<HTMLVideoElement>;
-  videoLoadState: LoadingStatus;
   landmarkChunk: [number, MyLandmarkType][];
   landmarkType: LandmarkType;
   isDisplayPosture: boolean;

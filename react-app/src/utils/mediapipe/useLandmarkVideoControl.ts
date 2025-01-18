@@ -5,9 +5,7 @@ interface Props {
   videoBlob: Blob;
 }
 
-export const useLandmarkVideoControl = ({
-  videoRef, videoBlob
-}: Props) => {
+export const useLandmarkVideoControl = ({ videoRef, videoBlob }: Props) => {
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [isLooping, setIsLooping] = useState<boolean>(false);
 

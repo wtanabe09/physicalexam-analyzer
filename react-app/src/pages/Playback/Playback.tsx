@@ -3,18 +3,13 @@ import { VideoPanel } from "./VideoPanel ";
 import { ControlPanel } from "./ControlPanel";
 import { CameraRegions, NAVBAR_WIDTH } from "../../consts/consts";
 import { useLocation } from "react-router-dom";
-import { ClipRegion, LandmarkChunk, LoadingStatus } from "../../consts/types";
+import { ClipRegion, LandmarkChunk } from "../../consts/types";
 import { useState } from "react";
 
 export const Playback = () => {
-
   const location = useLocation();
-  const {
-    videoBlob, loadingStatus,
-    poseLandmarks, handLandmarksTopCamera, handLandmarksFrontCamera
-  } = location.state as {
+  const { videoBlob, poseLandmarks, handLandmarksTopCamera, handLandmarksFrontCamera} = location.state as {
     videoBlob: Blob,
-    loadingStatus: LoadingStatus,
     poseLandmarks: LandmarkChunk,
     handLandmarksTopCamera: LandmarkChunk,
     handLandmarksFrontCamera: LandmarkChunk,
@@ -61,7 +56,6 @@ export const Playback = () => {
       <AppShell.Main>
         <VideoPanel
           videoBlob={videoBlob}
-          loadingStatus={loadingStatus}
           poseLandmarks={poseLandmarks}
           handLandmarksTopCamera={handLandmarksTopCamera}
           handLandmarksFrontCamera={handLandmarksFrontCamera}

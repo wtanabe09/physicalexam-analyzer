@@ -2,10 +2,11 @@
 
 import { useEffect, useState, RefObject, useRef, useCallback } from "react";
 import { NormalizedLandmark } from "@mediapipe/tasks-vision";
-import { ClipRegion, Landmarker } from "../../consts/types";
+import { ClipRegion, Landmarker, LandmarkType } from "../../consts/types";
 import { POSE_INDEX } from "../../consts/poseLandmarkIndex";
 import { HAND_INDEX } from "../../consts/handLandmarkIndex";
 import { CameraRegions } from "../../consts/consts";
+import { setupHandLandmarker, setupPoseLandmarker } from "./modelSettings";
 
 const ONE_SECOND_MS: number = 1000;
 const UPDATE_INTERVAL: number = 100; // ms
@@ -14,42 +15,23 @@ const getKeyByValue = (object: any, value: any) => {
   return Object.keys(object).find(key => object[key] === value);
 }
 
+const initializeLandmarker = async (landmarkerType: LandmarkType): Promise<Landmarker> => {
+  return landmarkerType === 'pose' ? await setupPoseLandmarker() : await setupHandLandmarker();
+};
+
 export const useLandmarkDetector = (
-  landmarker: Landmarker | null,
+  landmarkType: LandmarkType | null,
   videoRef: RefObject<HTMLVideoElement>,
   canvasRef: RefObject<HTMLCanvasElement>,
   clipRegion: ClipRegion
 ) => {
+  const [landmarker, setLandmarker] = useState<Landmarker | null>(null);
   const [landmarks, setLandmarks] = useState<[number, NormalizedLandmark[][]] | undefined>();
   const landmarksRef = useRef<[number, NormalizedLandmark[][]] | null>(null);
   const lastVideoTimeRef = useRef<number>(-1);
   const renderLoopIdRef = useRef<number | null>(null);
   const regionKey = getKeyByValue(CameraRegions, clipRegion);
 
-  // const fixLandmarkData = useCallback((
-  //   landmarks: NormalizedLandmark[][], regionKey: string
-  // ) => {
-  //   if (!landmarks || landmarks.length < 0) return;
-  //   const firstLandmark = landmarks[0];
-  //   const lastLandmark = landmarks[1];
-  //   if (regionKey === "Side") {
-  //     // 腰のx座標が大きい方を一人目（医者）とする
-  //     if (firstLandmark[POSE_INDEX.Side.hip.left].x < lastLandmark[POSE_INDEX.Side.hip.left].x) {
-  //       return [lastLandmark, firstLandmark];
-  //     }
-  //   } else if (regionKey === "Top") {
-  //     // 手の小指のy座標が小さい方を一つ目の手（右手）とする
-  //     if (firstLandmark[HAND_INDEX.pinky.tip].y > lastLandmark[HAND_INDEX.pinky.tip].y) {
-  //       return [lastLandmark, firstLandmark];
-  //     }
-  //   } else if (regionKey === "Front") {
-  //     // 手の小指のx座標が大きい方を一つ目の手（右手）とする
-  //     if (firstLandmark[HAND_INDEX.pinky.tip].x < lastLandmark[HAND_INDEX.pinky.tip].x) {
-  //       return [lastLandmark, firstLandmark];
-  //     }
-  //   }
-  //   return landmarks;
-  // }, []);
 
   const detectLandmarks = useCallback((video: HTMLVideoElement, canvas: HTMLCanvasElement): [number, NormalizedLandmark[][]] | null => {
     if (!landmarker || video.currentTime === lastVideoTimeRef.current) return null;
@@ -78,11 +60,22 @@ export const useLandmarkDetector = (
     }
     renderLoopIdRef.current = requestAnimationFrame(detectionLoop);
   }, [videoRef, canvasRef, detectLandmarks]);
+
+  useEffect(() => {
+    if (landmarkType) {
+      initializeLandmarker(landmarkType!).then(initializedLandmarker => {
+        setLandmarker(initializedLandmarker);
+        console.log("landmarker initialized: " + landmarkType);
+      }).catch(err => {
+        console.error("ランドマーカーの初期化に失敗しました: ", err);
+      });
+    }
+  }, [landmarkType]);
   
   useEffect(() => {
-    const video = videoRef.current;
+
     // 動画が読み込まれたらdetectionLoopを呼び出す readyState 4は動画が読み込まれたことを意味する
-    if (landmarker && video && video.readyState === 4 && !renderLoopIdRef.current) {
+    if (landmarker && videoRef.current && videoRef.current.readyState === 4 && !renderLoopIdRef.current) {
       renderLoopIdRef.current = requestAnimationFrame(detectionLoop);
     }
 
@@ -94,12 +87,37 @@ export const useLandmarkDetector = (
     }, UPDATE_INTERVAL);
 
     return () => {
-      if (renderLoopIdRef.current) {
-        cancelAnimationFrame(renderLoopIdRef.current);
-      }
-      clearInterval(intervalId);
+      if (renderLoopIdRef.current) cancelAnimationFrame(renderLoopIdRef.current);
+      if (intervalId) clearInterval(intervalId);
+      if (landmarker) landmarker?.close();
     };
-  }, [videoRef, detectionLoop]);
+  }, [videoRef, detectionLoop, landmarker]);
 
   return { landmarks };
 };
+
+
+// const fixLandmarkData = useCallback((
+  //   landmarks: NormalizedLandmark[][], regionKey: string
+  // ) => {
+  //   if (!landmarks || landmarks.length < 0) return;
+  //   const firstLandmark = landmarks[0];
+  //   const lastLandmark = landmarks[1];
+  //   if (regionKey === "Side") {
+  //     // 腰のx座標が大きい方を一人目（医者）とする
+  //     if (firstLandmark[POSE_INDEX.Side.hip.left].x < lastLandmark[POSE_INDEX.Side.hip.left].x) {
+  //       return [lastLandmark, firstLandmark];
+  //     }
+  //   } else if (regionKey === "Top") {
+  //     // 手の小指のy座標が小さい方を一つ目の手（右手）とする
+  //     if (firstLandmark[HAND_INDEX.pinky.tip].y > lastLandmark[HAND_INDEX.pinky.tip].y) {
+  //       return [lastLandmark, firstLandmark];
+  //     }
+  //   } else if (regionKey === "Front") {
+  //     // 手の小指のx座標が大きい方を一つ目の手（右手）とする
+  //     if (firstLandmark[HAND_INDEX.pinky.tip].x < lastLandmark[HAND_INDEX.pinky.tip].x) {
+  //       return [lastLandmark, firstLandmark];
+  //     }
+  //   }
+  //   return landmarks;
+  // }, []);
