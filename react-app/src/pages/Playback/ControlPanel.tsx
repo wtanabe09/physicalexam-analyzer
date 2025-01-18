@@ -1,9 +1,6 @@
 
 import { Radio } from "@mantine/core";
 import { LinkButton } from "../../utils/uiux/LinkButton";
-import { useState } from "react";
-import { ClipRegion, LandmarkChunk } from "../../consts/types";
-import { CameraRegions } from "../../consts/consts";
 import { ToggleButton } from "../../utils/uiux/ToggleButton";
 import { ZoomLevelBar } from "../../utils/uiux/ZoomLevelBar";
 

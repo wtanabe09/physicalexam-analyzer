@@ -7,16 +7,14 @@
 
 import { RefObject, useEffect, useRef } from "react";
 import { useLandmarkDetector } from "./useLandmarkDetector";
-import { ClipRegion, LandmarkChunk, LandmarkType, LoadingStatus } from "../../consts/types";
+import { ClipRegion, LandmarkChunk, LandmarkType } from "../../consts/types";
 import { ClippedVideo } from "../video/ClippedVideo";
-import { useLandmarker } from "./useLandmarker";
 import { drawLandmarksByDetected } from "./drawLandmarks";
 import { useLandmarkChunk } from "./useLnadmarkChunk";
 import { drawImage } from "./drawImage";
 
 interface Props {
   videoRef: RefObject<HTMLVideoElement>;
-  videoLoadState: LoadingStatus;
   width: number | string;
   height: number | string;
   isRecording: boolean;
@@ -24,31 +22,24 @@ interface Props {
   clipRegion: ClipRegion;
   isDisplayPosture: boolean;
   landmarkType: LandmarkType;
-  sessionName: String | null;
 }
 
 export const LandmarkVideoRealtime: React.FC<Props> = ({
-  videoRef, videoLoadState, width, height,
+  videoRef, width, height,
   isRecording, landmarksToParent,
-  clipRegion, isDisplayPosture, landmarkType, sessionName
+  clipRegion, isDisplayPosture, landmarkType
 }) => {
   const sourceCanvasRef = useRef<HTMLCanvasElement>(null);
   const outputCanvasRef = useRef<HTMLCanvasElement>(null);
+  const { landmarks } = useLandmarkDetector(landmarkType, videoRef, sourceCanvasRef, clipRegion); /* landmarks: [timestamp, result] */
 
-  const { landmarker } = useLandmarker(landmarkType);
-  const { landmarks } = useLandmarkDetector(landmarker, videoRef, sourceCanvasRef, clipRegion); /* landmarks: [timestamp, result] */
-
-  //chunkを作成し、親Recordingコンポーネントに渡す。 即時フィードバックビデオでも使うから。
-  const landmarkChunk = useLandmarkChunk({landmarks, landmarkType, isRecording, sessionName, clipRegion});
-  useEffect(() => {
-    if(landmarkChunk) landmarksToParent(landmarkChunk);
-  }, [landmarkChunk, landmarkType, landmarksToParent]);
+  //chunkを作成し、親(Recording)コンポーネントに渡す。 即時フィードバックビデオでも使うから。
+  useLandmarkChunk({ landmarks, landmarkType, isRecording, landmarksToParent });
 
   useEffect(() => {
-    const video = videoRef.current;
     const outputCanvas = outputCanvasRef.current;
     const sourceCanvas = sourceCanvasRef.current;
-    if (landmarks && video && sourceCanvas && outputCanvas) {
+    if (landmarks && videoRef.current && sourceCanvas && outputCanvas) {
       drawImage(sourceCanvas, outputCanvas, 1, landmarks[1]);
       drawLandmarksByDetected(landmarks[1], landmarkType, sourceCanvas, outputCanvas, isDisplayPosture);
     }
