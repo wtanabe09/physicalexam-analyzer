@@ -33,7 +33,7 @@ const App = () => {
         {({ signOut, user }) => (
             <AppShell
               header={{ height: APPSHELL_CONFIG.HEADER_HEIGHT }}
-              navbar={{ width: APPSHELL_CONFIG.NAVBAR_WIDTH, breakpoint: 'sm'}}
+              navbar={{ width: APPSHELL_CONFIG.NAVBAR_WIDTH, breakpoint: 'xs'}}
             >
               <AppShellHeader user={user} signOut={signOut} />
               <Routes>
