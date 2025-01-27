@@ -3,13 +3,13 @@ on:
   pull_request:
     branches:
       - main
-    types: [opened, synchronize, closed] #他のjobがある想定でこの設定にしている
+    types: [closed] #他のjobがある想定でこの設定にしている
 
 jobs:
   UploadStaticFiles:
     name: Upload static files
-    if: github.event.pull_request.merged == true #マージされたときのみこのjobを実行する
     runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true #マージされたときのみこのjobを実行する
     env:
       REACT_APP_BACKEND_URL: ${{ secrets.REACT_APP_BACKEND_URL }}
     
