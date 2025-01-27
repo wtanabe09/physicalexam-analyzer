@@ -1,5 +1,5 @@
 import { FilesetResolver, HandLandmarker, PoseLandmarker } from "@mediapipe/tasks-vision";
-import { NUM_POSES } from "../../consts/consts";
+import { NUM_POSES } from "../../exports/consts";
 
 const createVision = async () => {
   return await FilesetResolver.forVisionTasks(

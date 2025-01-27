@@ -37,3 +37,5 @@ export type ClipRegion = {
 export type Landmarker = PoseLandmarker | HandLandmarker;
 
 export type LandmarkType = "pose" | "hand" | "hand_patient_camera";
+
+export type FetchMethodType = "GET" | "PUT"

@@ -1,11 +1,10 @@
 import { Button, ComboboxItem } from "@mantine/core"
-import { ActivateState } from "../../consts/types";
+import { ActivateState } from "../../exports/types";
 import { useMemo } from "react";
 
 interface Props {
   className?: string;
   selectedUser: ComboboxItem | null;
-  isCorrectPassword: boolean;
   onGetVideo: () => void;
 }
 
@@ -37,13 +36,13 @@ const buttonConfigs: Record<ActivateState, ButtonConfig> = {
   },
 };
 
-export const GetVideoListButton: React.FC<Props> = ({className, selectedUser, isCorrectPassword, onGetVideo}) => {
+export const GetVideoListButton: React.FC<Props> = ({className, selectedUser, onGetVideo}) => {
 
   const activateState = useMemo<ActivateState>(() => {
-    if (selectedUser && isCorrectPassword) return 'activate';
+    if (selectedUser) return 'activate';
     if (!selectedUser) return 'no user selected';
     return 'wrong password';
-  }, [selectedUser, isCorrectPassword]);
+  }, [selectedUser]);
 
   const config = buttonConfigs[activateState];
 

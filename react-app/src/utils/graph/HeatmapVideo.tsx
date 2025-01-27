@@ -1,6 +1,6 @@
 
 import { useHeatmap } from "./useHeatmapArray";
-import { ClipRegion, LandmarkChunk } from "../../consts/types";
+import { ClipRegion, LandmarkChunk } from "../../exports/types";
 import { ClippedVideo } from "../video/ClippedVideo";
 import { useRef } from "react";
 import { useHeatmapRender } from "./useHeatmapRender";

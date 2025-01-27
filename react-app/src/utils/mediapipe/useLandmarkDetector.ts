@@ -2,10 +2,10 @@
 
 import { useEffect, useState, RefObject, useRef, useCallback } from "react";
 import { NormalizedLandmark } from "@mediapipe/tasks-vision";
-import { ClipRegion, Landmarker, LandmarkType } from "../../consts/types";
-import { POSE_INDEX } from "../../consts/poseLandmarkIndex";
-import { HAND_INDEX } from "../../consts/handLandmarkIndex";
-import { CameraRegions } from "../../consts/consts";
+import { ClipRegion, Landmarker, LandmarkType } from "../../exports/types";
+import { POSE_INDEX } from "../../exports/poseLandmarkIndex";
+import { HAND_INDEX } from "../../exports/handLandmarkIndex";
+import { CameraRegions } from "../../exports/consts";
 import { setupHandLandmarker, setupPoseLandmarker } from "./modelSettings";
 
 const ONE_SECOND_MS: number = 1000;

@@ -1,6 +1,5 @@
 
-import { Radio } from "@mantine/core";
-import { LinkButton } from "../../utils/uiux/LinkButton";
+import { Title, Radio, Stack } from "@mantine/core";
 import { ToggleButton } from "../../utils/uiux/ToggleButton";
 import { ZoomLevelBar } from "../../utils/uiux/ZoomLevelBar";
 
@@ -27,11 +26,8 @@ export const ControlPanel: React.FC<Props> = ({
 }) => {
 
   return (
-    <div className="bg-white p-4 m-2">
-      <div className="button-container hidden md:block border-b pb-4 mb-2">
-        <LinkButton text="録画画面へ" path="/" />
-        <LinkButton text="動画選択画面へ" path="/videos" />
-      </div>
+    <Stack p={5} m={10}>
+      <Title order={3} className="font-semibold mb-2">プレイバック</Title>
       <div className="mt-10 mb-10 pb-4 border-b">
         <ToggleButton
           labelText="骨格マーキング表示"
@@ -66,6 +62,6 @@ export const ControlPanel: React.FC<Props> = ({
           <Radio value="Front" label="(3) 患者カメラ"/>
         </Radio.Group>
       </div>
-    </div>
+    </Stack>
   )
 }

@@ -4,7 +4,7 @@ StreamからMediaRecorderを生成し，録画を行う.
 */
 
 import { useCallback, useRef, useState } from "react";
-import { downloadBlob } from "./blobUtils";
+import { downloadBlob } from "./blobDownloads";
 import { ComboboxItem } from "@mantine/core";
 
 interface StreamProps {

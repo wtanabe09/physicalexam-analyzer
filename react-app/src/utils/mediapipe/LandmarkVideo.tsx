@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { ClipRegion, LandmarkType, MyLandmarkType } from "../../consts/types";
+import { ClipRegion, LandmarkType, MyLandmarkType } from "../../exports/types";
 import { ClippedVideo } from "../video/ClippedVideo";
 import { useLandmarkRender } from "./useLandmarkRender";
 
