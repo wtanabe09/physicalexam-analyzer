@@ -1,41 +1,36 @@
 import { useCallback, useEffect, useState } from "react";
-import { ComboboxItem } from "@mantine/core";
-import { SelectBoxOption } from "../../consts/consts";
+import { ComboboxData, ComboboxItem } from "@mantine/core";
 import { fetchObjectKeys } from "../s3/s3Utils";
 
 interface Props {
   selectedDate: ComboboxItem | null,
   selectedUser: ComboboxItem | null,
-  isCorrectPass: boolean,
 }
 
 interface ReturnProps {
-  objectKeys: SelectBoxOption[],
+  objectKeys: ComboboxData,
   onGetObjectKeys: () => void;
 }
 
 // userを受け取って、ユーザーの動画一覧を取得する。
-export const useObjectKeys = ({selectedDate, selectedUser, isCorrectPass}: Props): ReturnProps => {
-  const [ objectKeys, setOptions ] = useState<SelectBoxOption[]>([]);
+export const useObjectKeys = ({selectedDate, selectedUser}: Props): ReturnProps => {
+  const [ objectKeys, setOptions ] = useState<ComboboxData>([]);
 
-  // セレクトボックスのKeyの一覧を作成
+  // 選択したユーザー名のPrefixがついたS3ファイルKeyの一覧を取得
   const onGetObjectKeys = useCallback(() => {
-    if (!selectedUser || !isCorrectPass) return;
+    if (!selectedUser) return;
 
     const fetchKeys = async () => {
-      const filteredOptions = await fetchObjectKeys(selectedUser.value);
-      setOptions(filteredOptions);
+      const filteredKeys = await fetchObjectKeys(selectedUser.value);
+      setOptions(filteredKeys);
     }
     fetchKeys();
 
-  }, [selectedUser, isCorrectPass]);
+  }, [selectedUser]);
 
   useEffect(() => {
-    if (!selectedUser || !isCorrectPass) {
-      setOptions([]);
-      return;
-    }
-  }, [isCorrectPass, selectedUser]);
+    if (!selectedUser) setOptions([]);
+  }, [selectedUser]);
 
   return { objectKeys, onGetObjectKeys };
 }

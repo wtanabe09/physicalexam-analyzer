@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { ClipRegion } from "../../consts/types";
+import { ClipRegion } from "../../exports/types";
 
 interface Props {
   videoRef: React.RefObject<HTMLVideoElement>,

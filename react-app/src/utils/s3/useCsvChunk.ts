@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
-import { FormattedCsvType, LandmarkType } from "../../consts/types";
+import { FormattedCsvType, LandmarkType } from "../../exports/types";
 import { NormalizedLandmark } from "@mediapipe/tasks-vision";
-import { NAN_ARRAY } from "../../consts/consts";
+import { NAN_ARRAY } from "../../exports/consts";
 
 export const useCsvChunk = (csvBlob: Blob, landmarkType: LandmarkType) => {
   const [landmarkChunk, setLandmarkChunk] = useState<FormattedCsvType | null>(null);

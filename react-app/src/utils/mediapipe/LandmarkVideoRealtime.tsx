@@ -7,7 +7,7 @@
 
 import { RefObject, useEffect, useRef } from "react";
 import { useLandmarkDetector } from "./useLandmarkDetector";
-import { ClipRegion, LandmarkChunk, LandmarkType } from "../../consts/types";
+import { ClipRegion, LandmarkChunk, LandmarkType } from "../../exports/types";
 import { ClippedVideo } from "../video/ClippedVideo";
 import { drawLandmarksByDetected } from "./drawLandmarks";
 import { useLandmarkChunk } from "./useLnadmarkChunk";

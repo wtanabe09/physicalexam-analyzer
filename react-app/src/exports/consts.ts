@@ -1,8 +1,12 @@
 import { HandLandmarker, PoseLandmarker } from "@mediapipe/tasks-vision";
 import { ClipRegion } from "./types";
+import { ComboboxData } from "@mantine/core";
 
-export const NAVBAR_WIDTH = 300
-export const APPSHELL_GAP = 20
+export const APPSHELL_CONFIG = {
+  HEADER_HEIGHT: 60,
+  NAVBAR_WIDTH: 300,
+  GAP: 20,
+}
 
 export const FRAMESIZE = {
   VIDEO: {'WIDTH': 1920, 'HEIGHT': 1080},
@@ -10,27 +14,10 @@ export const FRAMESIZE = {
 }
 
 export const FRAMERATE = 30
-
 export const NUM_POSES: number = 2;
-
 export const FEATURE_TIMES = 20;
 
-export interface SelectBoxOption {
-  value: string;
-  label: string;
-}
-
-export const userOptions: SelectBoxOption[] = [
-  { value: '0', label: 'ユーザー0' },
-  { value: '1', label: 'ユーザー1' },
-  { value: '2', label: 'ユーザー2' },
-  { value: '3', label: 'ユーザー3' },
-  { value: '4', label: 'ユーザー4' },
-  { value: '5', label: 'ユーザー5' },
-  { value: '6', label: 'ユーザー6' },
-];
-
-export const techniqueOptions: SelectBoxOption[] = [
+export const techniqueOptions: ComboboxData = [
   // { value: '0', label: 'テスト用' },
   // { value: '1', label: '手技1' },
   // { value: '2', label: '手技2' },
@@ -48,20 +35,7 @@ export const techniqueOptions: SelectBoxOption[] = [
   { value: '15', label: '手技6' },
 ];
 
-type PassList = {
-  [key: string]: string;
-}
-export const PASS_List: PassList = {
-  0: "000",
-  1: "aaa",
-  2: "bbb",
-  3: "ccc",
-  4: "ddd",
-  5: "eee",
-  6: "fff",
-}
-
-export const dateOptions: SelectBoxOption[] = [
+export const dateOptions: ComboboxData = [
   { value: '20240910', label: '20240910' },
   { value: '20241010', label: '20241010' },
   { value: '20241107', label: '20241107' },

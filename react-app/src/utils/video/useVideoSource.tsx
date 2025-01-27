@@ -1,22 +1,21 @@
 import { useEffect, useState } from "react";
-import { VideoSource } from "../../consts/types";
+import { VideoSource } from "../../exports/types";
 
-export const useVideoSource = (videoRef: React.RefObject<HTMLVideoElement>, source: VideoSource) => {
-  const [currentTime, setCurrentTime] = useState<number>(0);
+export const useVideoSource = (video: HTMLVideoElement | null, source: VideoSource | null) => {
+  const [videoCurrentTime, setCurrentTime] = useState<number>(0);
 
   useEffect(() => {
-    const video = videoRef.current;
     if (!video || !source) return;
 
     const setVideoSource = async () => {
-      if (source instanceof Blob) {
-        const blobUrl = URL.createObjectURL(source);
-        video.src = blobUrl;
-      } else {
-        video.srcObject = source;
-      }
-
       try {
+        if (source instanceof Blob) {
+          const blobUrl = URL.createObjectURL(source);
+          video.src = blobUrl;
+        } else {
+          video.srcObject = source;
+        }
+
         await new Promise((resolve) => {
           video.onloadedmetadata = resolve;
         });
@@ -41,16 +40,16 @@ export const useVideoSource = (videoRef: React.RefObject<HTMLVideoElement>, sour
       video.removeEventListener('timeupdate', updateCurrentTime);
       URL.revokeObjectURL(video.src);
     }
-  }, [videoRef, source]);
+  }, [video, source]);
 
   // シークバーの変更ハンドラ
   const handleSeekChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newTime = parseFloat(event.target.value);
     setCurrentTime(newTime);
-    if (videoRef.current) {
-      videoRef.current.currentTime = newTime;
+    if (video) {
+      video.currentTime = newTime;
     }
   };
 
-  return { currentTime, handleSeekChange }
+  return { videoCurrentTime, handleSeekChange }
 };

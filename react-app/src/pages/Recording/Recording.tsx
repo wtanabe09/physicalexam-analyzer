@@ -1,13 +1,12 @@
 import { useEffect, useState } from 'react';
 import { AppShell, ComboboxItem, Container } from '@mantine/core';
-import { FRAMERATE, FRAMESIZE, NAVBAR_WIDTH } from '../../consts/consts';
+import { FRAMERATE, FRAMESIZE } from '../../exports/consts';
 import { useRecorder } from '../../utils/video/useRecorder';
 import { useMediaStream } from '../../utils/video/useMediaStream';
 import { ControlPanel } from './ControlPanel';
 import { RealtimeVideoPanel } from './RealtimeVideoPanel';
-import { LinkButton } from '../../utils/uiux/LinkButton';
 import { useMediaQuery } from '@mantine/hooks';
-import { LandmarkChunk } from '../../consts/types';
+import { LandmarkChunk } from '../../exports/types';
 import { useNavigate } from 'react-router-dom';
 import { createRowData } from '../../utils/s3/useCsvChunk';
 import { fetchSessionData, fetchBlob } from '../../utils/s3/s3Utils';
@@ -35,22 +34,25 @@ export const Recording = () => {
         const uploadThisSession = async() => {
           try {
             const sessionData: {session_id: string; timestamp: string } = await fetchSessionData();
+            console.log("### upload start ### : " + sessionData['timestamp']);
 
             if (sessionData) {
-              fetchBlob('PUT', recordedBlob, selectedUser.value, selectedTechnique.value, sessionData['timestamp'], sessionData['session_id'],  "all", "mp4");
             
               const poseDataArray = poseLandmarkChunk.map(([timestamp, landmarks]) => createRowData(timestamp, landmarks));
               const poseBlob = new Blob(poseDataArray, { type: 'text/csv' });
-              fetchBlob('PUT', poseBlob, selectedUser.value, selectedTechnique.value, sessionData['timestamp'], sessionData['session_id'], "pose", "csv");
               
               const handTopDataArray = handLandmarkChunkTopCamera.map(([timestamp, landmarks]) => createRowData(timestamp, landmarks));
               const handTopBlob = new Blob(handTopDataArray, { type: 'text/csv' });
-              fetchBlob('PUT', handTopBlob, selectedUser.value, selectedTechnique.value, sessionData['timestamp'], sessionData['session_id'], "hand", "csv");
     
               const handFrontDataArray = handLandmarkChunkFrontCamera.map(([timestamp, landmarks]) => createRowData(timestamp, landmarks));
               const handFrontBlob = new Blob(handFrontDataArray, { type: 'text/csv' });
-              fetchBlob('PUT', handFrontBlob, selectedUser.value, selectedTechnique.value, sessionData['timestamp'], sessionData['session_id'], "hand_patient_camera", "csv");
+              
+              await fetchBlob('PUT', recordedBlob, selectedUser.value, selectedTechnique.value, sessionData['timestamp'], sessionData['session_id'],  "all", "mp4")
+              await fetchBlob('PUT', poseBlob, selectedUser.value, selectedTechnique.value, sessionData['timestamp'], sessionData['session_id'], "pose", "csv")
+              await fetchBlob('PUT', handTopBlob, selectedUser.value, selectedTechnique.value, sessionData['timestamp'], sessionData['session_id'], "hand", "csv")
+              await fetchBlob('PUT', handFrontBlob, selectedUser.value, selectedTechnique.value, sessionData['timestamp'], sessionData['session_id'], "hand_patient_camera", "csv")
             }
+            console.log("### upload done ###: " + sessionData['timestamp']);
           } catch (error) {
             console.error('Error upload session data: ', error);
           }
@@ -72,14 +74,11 @@ export const Recording = () => {
   if (isMobile) return (
     <Container fluid p="h-lg" style={{height: '100vh'}}>
       <h2>スマホでは録画できません🙇‍♂️</h2>
-      <LinkButton text="動画選択画面へ" path="/videos" />
     </Container>
   );
 
   return (
-      <AppShell
-        navbar={{ width: NAVBAR_WIDTH, breakpoint: 'sm'}}
-      >
+      <>
         <AppShell.Navbar>
           <ControlPanel
             selectedUser={selectedUser}
@@ -105,6 +104,6 @@ export const Recording = () => {
             setHandLandmarkChunkForHeatmap={setHandLandmarkChunkForHeatmap}
           />
         </AppShell.Main>
-      </AppShell>
+      </>
   );
 }

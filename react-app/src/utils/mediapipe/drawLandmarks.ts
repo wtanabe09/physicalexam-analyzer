@@ -1,7 +1,7 @@
 import { NormalizedLandmark } from "@mediapipe/tasks-vision";
-import { POSE_CONNECTIONS, HAND_CONNECTIONS } from "../../consts/consts";
-import { HAND_INDEX } from "../../consts/handLandmarkIndex";
-import { Connection, LandmarkType, MyLandmarkType } from "../../consts/types";
+import { POSE_CONNECTIONS, HAND_CONNECTIONS } from "../../exports/consts";
+import { HAND_INDEX } from "../../exports/handLandmarkIndex";
+import { Connection, LandmarkType, MyLandmarkType } from "../../exports/types";
 
 const INDEX_KNEE_LANDMARK = 27;
 const ZOOM_MARKING = HAND_INDEX.thumb.tip;

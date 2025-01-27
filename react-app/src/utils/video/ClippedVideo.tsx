@@ -1,5 +1,5 @@
 import React, { useRef, forwardRef, useImperativeHandle } from "react";
-import { ClipRegion } from "../../consts/types";
+import { ClipRegion } from "../../exports/types";
 import { useClippedVideo } from "./useClippedVideo";
 
 interface Props {
