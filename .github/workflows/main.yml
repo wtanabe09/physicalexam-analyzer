@@ -12,6 +12,10 @@ jobs:
     if: github.event.pull_request.merged == true #マージされたときのみこのjobを実行する
     env:
       REACT_APP_BACKEND_URL: ${{ secrets.REACT_APP_BACKEND_URL }}
+      
+    defaults:
+      run:
+        working-directory: react-app
     
     steps:
       - uses: actions/checkout@v3
