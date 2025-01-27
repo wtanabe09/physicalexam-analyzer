@@ -2,42 +2,32 @@ import { Button, Checkbox } from "@mantine/core";
 import { CiPlay1, CiPause1 } from "react-icons/ci";
 import React from "react";
 import { useLandmarkVideoControl } from "./useLandmarkVideoControl";
+import { useVideoSource } from "../video/useVideoSource";
 
 interface VideoControlsProps {
   videoRef: React.RefObject<HTMLVideoElement>;
   recordedVideoBlob: Blob;
   isDisplayPosture: boolean;
-  videoCurrentTime: number;
-  handleSeekChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 export const LandmarkVideoControls: React.FC<VideoControlsProps> = React.memo(({ 
   videoRef,
   recordedVideoBlob,
-  videoCurrentTime,
-  handleSeekChange,
 }) => {
+  const { videoCurrentTime, handleSeekChange } = useVideoSource(videoRef.current, recordedVideoBlob);
+  const { isPlaying, isLooping, togglePlayPause, toggleLooping} = useLandmarkVideoControl({videoRef, videoBlob: recordedVideoBlob});
 
-  const {
-    isPlaying,
-    isLooping,
-    togglePlayPause,
-    toggleLooping,
-  } = useLandmarkVideoControl({videoRef, videoBlob: recordedVideoBlob});
-
-  if (!videoRef.current || videoRef.current.HAVE_NOTHING) {
-    return null;
-  }
+  const formatTime = (seconds: number): string => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
 
   return (
-    <div className="border p-5 my-5">
+    <div className="border p-4 mt-5">
       <input
-        type="range"
-        min="0"
-        max={videoRef.current.duration || 0}
-        value={videoCurrentTime}
-        onChange={handleSeekChange}
-        style={{ width: '100%' }}
+        type="range" min="0" max={videoRef.current?.duration || 0}
+        value={videoCurrentTime} onChange={handleSeekChange} style={{ width: '100%' }}
       />
       <div className="flex flex-wrap justify-between">
         <div className="video-control flex gap-2">
@@ -49,7 +39,7 @@ export const LandmarkVideoControls: React.FC<VideoControlsProps> = React.memo(({
           >
             {isPlaying ? <CiPause1 size={20} /> : <CiPlay1 size={20} />}
           </Button>
-          <p>{ Math.trunc(videoCurrentTime) }</p>
+          <p>{ formatTime(videoCurrentTime) }</p>
           <Checkbox
             label="ループ"
             checked={isLooping}

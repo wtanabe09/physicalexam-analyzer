@@ -1,6 +1,6 @@
 import { NormalizedLandmark } from "@mediapipe/tasks-vision";
 import { useCallback, useEffect } from "react";
-import { LandmarkType, MyLandmarkType } from "../../consts/types";
+import { LandmarkType, MyLandmarkType } from "../../exports/types";
 import { drawLandmarksByDetected } from "./drawLandmarks";
 import { drawImage } from "./drawImage";
 

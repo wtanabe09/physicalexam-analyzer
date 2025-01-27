@@ -1,18 +1,15 @@
-import { PasswordInput, Select } from "@mantine/core"
-import { dateOptions, SelectBoxOption, userOptions } from "../../consts/consts";
-import { LinkButton } from "../../utils/uiux/LinkButton";
+import { ComboboxData, Select } from "@mantine/core"
+import { dateOptions } from "../../exports/consts";
 import { GetVideoListButton } from "../../utils/video/GetVideoListButton";
+import { useListUsers } from "../../utils/user/useListUsers";
 
 interface Props {
   selectedDate: any;
   setDateValue: (option: any) => void;
   selectedUser: any;
   setUserValue: (option: any) => void;
-  password: string;
-  setPassword: (value: string) => void;
-  isCorrectPassword: boolean;
   onGetObjectKeys: () => void;
-  videoOptions: any[];
+  videoObjectKeys: ComboboxData;
   selectedVideo: any;
   setVideoKey: (option: any) => void;
 }
@@ -20,22 +17,16 @@ interface Props {
 export const ControlPanel: React.FC<Props> = ({
   selectedDate, setDateValue,
   selectedUser, setUserValue,
-  password, setPassword,
-  isCorrectPassword, onGetObjectKeys,
-  videoOptions, selectedVideo, setVideoKey,
+  onGetObjectKeys,
+  videoObjectKeys, selectedVideo, setVideoKey,
 }) => {
-
-  const getVideoPlaceholder = (videoOptions: SelectBoxOption[], isCorrect: boolean) => {
-    return videoOptions.length > 0 && isCorrect
-      ? "ビデオを選択"
-      : "ビデオは選択できません";
+  const listUsers = useListUsers();
+  const getVideoPlaceholder = (videoObjectKeys: ComboboxData) => {
+    return videoObjectKeys && videoObjectKeys.length > 0 ? "ビデオを選択" : "ビデオは選択できません";
   };
 
   return (
     <div className="bg-white p-2">
-      <div className="link-field hidden md:block mb-4 pb-2 border-b">
-        <LinkButton text="録画画面へ" path="/" />
-      </div>
       <h2 className="text-lg font-semibold mb-2">動画選択</h2>
       <div className="flex flex-wrap gap-4">
         <Select
@@ -47,29 +38,22 @@ export const ControlPanel: React.FC<Props> = ({
         />
         <Select
           className="w-full"
-          data={userOptions}
+          data={listUsers}
           value={selectedUser ? selectedUser.value : null}
           onChange={(_value, option) => setUserValue(option)}
           placeholder="ユーザーを選択してください"
         />
-        <PasswordInput
-          className="w-full"
-          value={password}
-          onChange={(event) => setPassword(event.currentTarget.value)}
-          placeholder="パスワードを入力してください"
-        />
         <GetVideoListButton
           className="w-full"
           selectedUser={selectedUser}
-          isCorrectPassword={isCorrectPassword}
           onGetVideo={onGetObjectKeys}
         />
         <Select
           className="w-full"
-          data={videoOptions}
+          data={videoObjectKeys}
           value={selectedVideo ? selectedVideo.value : null}
           onChange={(_value, option) => setVideoKey(option)}
-          placeholder={getVideoPlaceholder(videoOptions, isCorrectPassword)}
+          placeholder={getVideoPlaceholder(videoObjectKeys)}
         />
       </div>
     </div>

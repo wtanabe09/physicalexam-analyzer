@@ -2,10 +2,6 @@ import { useCallback, useEffect, useState } from "react";
 import { ComboboxItem } from "@mantine/core";
 import { fetchBlob } from "./s3Utils";
 
-export const baseBucket = process.env.REACT_APP_TEST_DATA_BUCKET_NAME as string;
-export const videoBucketName = `${baseBucket}-mp4`;
-export const csvBucketName = `${baseBucket}-csv`;
-
 interface VideoSelectBoxState {
   videoBlob: Blob | null;
   csvBlobPose: Blob | null;
@@ -13,7 +9,7 @@ interface VideoSelectBoxState {
   csvBlobHandFrontCam: Blob | null;
 }
 
-export const useS3Downloader = (selectedVideoKey: ComboboxItem | null, isCorrectPass: boolean): VideoSelectBoxState => {
+export const useS3Downloader = (selectedVideoKey: ComboboxItem | null): VideoSelectBoxState => {
   const [videoBlob, setVideoBlob] = useState<Blob | null>(null);
   const [csvBlobPose, setCsvBlobPose] = useState<Blob | null>(null);
   const [csvBlobHand, setCsvBlobHand] = useState<Blob | null>(null);
@@ -26,15 +22,13 @@ export const useS3Downloader = (selectedVideoKey: ComboboxItem | null, isCorrect
     const pathComp = selectedVideoKey.value.split("/");
     try {
       const resVideo = await fetchBlob('GET', null, pathComp[0].slice(-2), pathComp[1].slice(-2), pathComp[2], pathComp[3],  "all", "mp4");
-      setVideoBlob(await resVideo?.blob()!);
-      
       const resCsvPose = await fetchBlob('GET', null, pathComp[0].slice(-2), pathComp[1].slice(-2), pathComp[2], pathComp[3],  "pose", "csv");
-      setCsvBlobPose(await resCsvPose?.blob()!);
-      
       const resCsvHand = await fetchBlob('GET', null, pathComp[0].slice(-2), pathComp[1].slice(-2), pathComp[2], pathComp[3],  "hand", "csv");
-      setCsvBlobHand(await resCsvHand?.blob()!);
-      
       const resCsvHandP = await fetchBlob('GET', null, pathComp[0].slice(-2), pathComp[1].slice(-2), pathComp[2], pathComp[3],  "hand_patient_camera", "csv");
+      
+      setVideoBlob(await resVideo?.blob()!);
+      setCsvBlobPose(await resCsvPose?.blob()!);
+      setCsvBlobHand(await resCsvHand?.blob()!);
       setCsvBlobHandFrontCam(await resCsvHandP?.blob()!);
 
     } catch (err) {
@@ -43,14 +37,14 @@ export const useS3Downloader = (selectedVideoKey: ComboboxItem | null, isCorrect
   }, [selectedVideoKey]);
 
   useEffect(() => {
-    if (selectedVideoKey && isCorrectPass) {
+    if (selectedVideoKey) {
       fetchDatas();
     } else {
       setVideoBlob(null);
       setCsvBlobPose(null);
       setCsvBlobHand(null);
     }
-  }, [selectedVideoKey, fetchDatas, isCorrectPass]);
+  }, [selectedVideoKey, fetchDatas]);
 
   return { videoBlob, csvBlobPose, csvBlobHand, csvBlobHandFrontCam };
 }

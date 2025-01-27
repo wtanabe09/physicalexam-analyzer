@@ -1,8 +1,8 @@
-import { techniqueOptions, userOptions } from "../../consts/consts";
+import { techniqueOptions } from "../../exports/consts";
 import { RecordingButton } from "../../utils/video/RecordingButton";
 import { ComboboxItem, Select } from "@mantine/core";
 import { ToggleButton } from "../../utils/uiux/ToggleButton";
-import { LinkButton } from "../../utils/uiux/LinkButton";
+import { useListUsers } from "../../utils/user/useListUsers";
 
 interface ControlPanelProps {
   selectedUser: ComboboxItem | null;
@@ -24,13 +24,9 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   isDisplayPosture, setIsDisplayPosture,
   isLocalSave, setIsLocalSave,
 }) => {
-  
-
+  const userOptions = useListUsers();
   return (
     <div className="container p-2">
-      <div className="link-field mb-4 pb-2 border-b">
-        <LinkButton text="動画選択画面へ" path="/videos" />
-      </div>
       <div className="select-session-container">
         <h2 className="text-lg font-semibold mb-2">演習者選択</h2>
         <div>
@@ -52,7 +48,6 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           placeholder="手技を選択してください"
         />
       </div>
-      {/* {selectedTechnique && selectedUser && ( */}
         <div className="">
           <RecordingButton
             isRecording={isRecording}
@@ -70,7 +65,6 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
             labelText="AR動画表示"
           /> */}
         </div>
-      {/* )} */}
     </div>
   )
 };

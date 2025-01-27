@@ -1,6 +1,6 @@
 import { NormalizedLandmark } from "@mediapipe/tasks-vision";
-import { POSE_INDEX } from "../../consts/poseLandmarkIndex";
-import { Point2D } from "../../consts/types";
+import { POSE_INDEX } from "../../exports/poseLandmarkIndex";
+import { Point2D } from "../../exports/types";
 
 function isNormalizedLandmarkArray(arr: any[]): arr is NormalizedLandmark[] {
   return arr.length > 0 && typeof arr[0] === 'object' && 'x' in arr[0] && 'y' in arr[0];

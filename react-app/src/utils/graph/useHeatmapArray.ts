@@ -1,8 +1,8 @@
 
-import { LandmarkChunk, MyLandmarkType } from "../../consts/types";
-import { FIRST_FIND_INDEX } from "../../consts/consts";
+import { LandmarkChunk, MyLandmarkType } from "../../exports/types";
+import { FIRST_FIND_INDEX } from "../../exports/consts";
 import { useEffect, useState } from "react";
-import { HAND_INDEX } from "../../consts/handLandmarkIndex";
+import { HAND_INDEX } from "../../exports/handLandmarkIndex";
 import { NormalizedLandmark } from "@mediapipe/tasks-vision";
 
 const isNormalizedLandmarkArray = (landmarks: MyLandmarkType): landmarks is NormalizedLandmark[][] => {

@@ -1,6 +1,6 @@
 import { NormalizedLandmark } from "@mediapipe/tasks-vision";
 import { useEffect, useRef } from "react"
-import { LandmarkChunk, LandmarkType } from "../../consts/types";
+import { LandmarkChunk, LandmarkType } from "../../exports/types";
 
 interface Props {
   landmarks: [number, NormalizedLandmark[][]]  | undefined,

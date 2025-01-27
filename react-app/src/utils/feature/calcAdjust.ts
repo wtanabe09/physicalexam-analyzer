@@ -1,7 +1,7 @@
 import { NormalizedLandmark } from "@mediapipe/tasks-vision";
 import { calcFeatureIndividual, getPoint } from "./calcFeature";
-import { Point2D } from "../../consts/types";
-import { POSE_INDEX } from "../../consts/poseLandmarkIndex";
+import { Point2D } from "../../exports/types";
+import { POSE_INDEX } from "../../exports/poseLandmarkIndex";
 
 export const calcScale = (testLand: number[], compairLand: NormalizedLandmark[]): number => {
   const [tHandToKneeY, tShoulderToHipY] = calcFeatureIndividual(testLand);
