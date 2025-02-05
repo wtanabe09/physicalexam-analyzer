@@ -8,8 +8,9 @@ import { RealtimeVideoPanel } from './RealtimeVideoPanel';
 import { useMediaQuery } from '@mantine/hooks';
 import { LandmarkChunk } from '../../exports/types';
 import { useNavigate } from 'react-router-dom';
-import { createRowData } from '../../utils/s3/useCsvChunk';
-import { fetchSessionData, fetchBlob } from '../../utils/s3/s3Utils';
+import { createRowData } from '../../utils/aws/useCsvChunk';
+import { fetchBlob, getTimestamp } from '../../utils/aws/s3Util';
+import { fetchAuthSession } from 'aws-amplify/auth';
 
 export const Recording = () => {
   const [isDisplayRealtimePosture, setIsDisplayRealtimePosture] = useState<boolean>(true);
@@ -31,28 +32,28 @@ export const Recording = () => {
     if (selectedUser && selectedTechnique) {
       if (recordedBlob && poseLandmarkChunk.length > 1 && handLandmarkChunkTopCamera.length > 1 && handLandmarkChunkTopCamera.length > 1) {
 
+        const timestamp = getTimestamp();
         const uploadThisSession = async() => {
           try {
-            const sessionData: {session_id: string; timestamp: string } = await fetchSessionData();
-            console.log("### upload start ### : " + sessionData['timestamp']);
-
-            if (sessionData) {
+            console.log("### upload start ### : " + timestamp);
+          
+            const poseDataArray = poseLandmarkChunk.map(([timestamp, landmarks]) => createRowData(timestamp, landmarks));
+            const poseBlob = new Blob(poseDataArray, { type: 'text/csv' });
             
-              const poseDataArray = poseLandmarkChunk.map(([timestamp, landmarks]) => createRowData(timestamp, landmarks));
-              const poseBlob = new Blob(poseDataArray, { type: 'text/csv' });
-              
-              const handTopDataArray = handLandmarkChunkTopCamera.map(([timestamp, landmarks]) => createRowData(timestamp, landmarks));
-              const handTopBlob = new Blob(handTopDataArray, { type: 'text/csv' });
-    
-              const handFrontDataArray = handLandmarkChunkFrontCamera.map(([timestamp, landmarks]) => createRowData(timestamp, landmarks));
-              const handFrontBlob = new Blob(handFrontDataArray, { type: 'text/csv' });
-              
-              await fetchBlob('PUT', recordedBlob, selectedUser.value, selectedTechnique.value, sessionData['timestamp'], sessionData['session_id'],  "all", "mp4")
-              await fetchBlob('PUT', poseBlob, selectedUser.value, selectedTechnique.value, sessionData['timestamp'], sessionData['session_id'], "pose", "csv")
-              await fetchBlob('PUT', handTopBlob, selectedUser.value, selectedTechnique.value, sessionData['timestamp'], sessionData['session_id'], "hand", "csv")
-              await fetchBlob('PUT', handFrontBlob, selectedUser.value, selectedTechnique.value, sessionData['timestamp'], sessionData['session_id'], "hand_patient_camera", "csv")
-            }
-            console.log("### upload done ###: " + sessionData['timestamp']);
+            const handTopDataArray = handLandmarkChunkTopCamera.map(([timestamp, landmarks]) => createRowData(timestamp, landmarks));
+            const handTopBlob = new Blob(handTopDataArray, { type: 'text/csv' });
+  
+            const handFrontDataArray = handLandmarkChunkFrontCamera.map(([timestamp, landmarks]) => createRowData(timestamp, landmarks));
+            const handFrontBlob = new Blob(handFrontDataArray, { type: 'text/csv' });
+
+            const session = await fetchAuthSession();
+            const idToken = session.tokens?.idToken?.toString();
+            
+            await fetchBlob('PUT', idToken!, recordedBlob, selectedUser.value, selectedTechnique.value, timestamp,  "all", "mp4")
+            await fetchBlob('PUT', idToken!, poseBlob, selectedUser.value, selectedTechnique.value, timestamp, "pose", "csv")
+            await fetchBlob('PUT', idToken!, handTopBlob, selectedUser.value, selectedTechnique.value, timestamp, "hand", "csv")
+            await fetchBlob('PUT', idToken!, handFrontBlob, selectedUser.value, selectedTechnique.value, timestamp, "hand-front", "csv")
+            console.log("### upload done ###: " + timestamp);
           } catch (error) {
             console.error('Error upload session data: ', error);
           }
@@ -60,7 +61,7 @@ export const Recording = () => {
         uploadThisSession();
 
         // 画面遷移はRecordingに書きたいし、uploadは各コンポーネントにかきたい
-        navigate("/video", { state: {
+        navigate(`/video/${timestamp}`, { state: {
           videoBlob: recordedBlob,
           poseLandmarks: poseLandmarkChunk,
           handLandmarksTopCamera: handLandmarkChunkTopCamera,
@@ -78,32 +79,32 @@ export const Recording = () => {
   );
 
   return (
-      <>
-        <AppShell.Navbar>
-          <ControlPanel
-            selectedUser={selectedUser}
-            setUserValue={setUserValue}
-            selectedTechnique={selectedTechnique}
-            setTechniqueValue={setTechniqueValue}
-            isRecording={isRecording}
-            startRecording={startRecording}
-            stopRecording={stopRecording}
-            isDisplayPosture={isDisplayRealtimePosture}
-            setIsDisplayPosture={setIsDisplayRealtimePosture}
-            isLocalSave={isLocalSave}
-            setIsLocalSave={setIsLocalSave}
-          />
-        </AppShell.Navbar>
-        <AppShell.Main>
-          <RealtimeVideoPanel
-            stream={stream}
-            isRecording={isRecording}
-            isDisplayPosture={isDisplayRealtimePosture}
-            setPoseLandmarkChunk={setPoseLandmarkChunk}
-            setHandLandmarkChunk={setHandLandmarkChunk}
-            setHandLandmarkChunkForHeatmap={setHandLandmarkChunkForHeatmap}
-          />
-        </AppShell.Main>
-      </>
+    <>
+      <AppShell.Navbar>
+        <ControlPanel
+          selectedUser={selectedUser}
+          setUserValue={setUserValue}
+          selectedTechnique={selectedTechnique}
+          setTechniqueValue={setTechniqueValue}
+          isRecording={isRecording}
+          startRecording={startRecording}
+          stopRecording={stopRecording}
+          isDisplayPosture={isDisplayRealtimePosture}
+          setIsDisplayPosture={setIsDisplayRealtimePosture}
+          isLocalSave={isLocalSave}
+          setIsLocalSave={setIsLocalSave}
+        />
+      </AppShell.Navbar>
+      <AppShell.Main>
+        <RealtimeVideoPanel
+          stream={stream}
+          isRecording={isRecording}
+          isDisplayPosture={isDisplayRealtimePosture}
+          setPoseLandmarkChunk={setPoseLandmarkChunk}
+          setHandLandmarkChunk={setHandLandmarkChunk}
+          setHandLandmarkChunkForHeatmap={setHandLandmarkChunkForHeatmap}
+        />
+      </AppShell.Main>
+    </>
   );
 }

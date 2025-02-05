@@ -21,7 +21,7 @@ export const useHeatmapRender = ({ originVideoRef, sourceCanvasRef, heatmapCanva
       } catch (error) {
         console.error("Error in renderFrame:", error);
       }
-    }, [heatmapArray]);
+    }, [heatmapCanvasRef, sourceCanvasRef]);
   
     const renderLoop = useCallback(() => {
       if (!heatmapArray) return;
@@ -35,6 +35,6 @@ export const useHeatmapRender = ({ originVideoRef, sourceCanvasRef, heatmapCanva
       if (originVideoRef.current && originVideoRef.current.played) {
         renderLoop();
       }
-    }, [originVideoRef, heatmapArray]);
+    }, [originVideoRef, heatmapArray, renderLoop]);
   
   }

@@ -29,33 +29,35 @@ export const calcHeatmap = (
     const landmarks = landmarkChunk[i][1];
     if (landmarks.length === 0) continue;
 
-    if (isNormalizedLandmarkArray(landmarks)) {
-      // Normalizedlandmark の場合の座標取得
-      let index = 0
-      if (landmarks.length > 1 &&
-        landmarks[0][HAND_INDEX.pinky.tip].y > landmarks[1][HAND_INDEX.pinky.tip].y) {
-        index = 1;
+    try {
+      if (isNormalizedLandmarkArray(landmarks)) {
+        // Normalizedlandmark の場合の座標取得
+        let humanIndex = 0
+        if (landmarks.length > 1 && landmarks[0][HAND_INDEX.pinky.tip].y > landmarks[1][HAND_INDEX.pinky.tip].y) {
+          humanIndex = 1;
+        }
+        const landmark = landmarks[humanIndex][targetIndex];
+        const arrIndex = {x: Math.floor(landmark.x * arrayWidth), y: Math.floor(landmark.y * arrayHeight)}
+        
+        if (0 <= arrIndex.x && arrIndex.x < arrayWidth && 0 <= arrIndex.y && arrIndex.y < arrayHeight) {
+          heatmapArray[arrIndex.y][arrIndex.x]++; // 行・列で指定するためY, Xの順
+        }
+      } else if (isNumberArray(landmarks)) {
+        // csvの場合の座標取得
+        let humanIndex = 0;
+        if (landmarks[1][HAND_INDEX.pinky.tip * 2 + 1] !== 0 &&
+          landmarks[FIRST_FIND_INDEX][HAND_INDEX.pinky.tip * 2 + 1] > landmarks[1][HAND_INDEX.pinky.tip * 2 + 1]) {
+          humanIndex = 1;
+        }
+        const landmarkX = landmarks[humanIndex][targetIndex * 2];
+        const landmarkY = landmarks[humanIndex][targetIndex * 2 + 1];
+        const arrIndex = {x: Math.floor(landmarkX * arrayWidth), y: Math.floor(landmarkY * arrayHeight)}
+        if (0 <= arrIndex.x && arrIndex.x < arrayWidth && 0 <= arrIndex.y && arrIndex.y < arrayHeight) {
+          heatmapArray[arrIndex.y][arrIndex.x]++; // 行・列で指定するためY, Xの順
+        }
       }
-      const landmark = landmarks[index][targetIndex];
-      const indexX = Math.floor(landmark.x * arrayWidth);
-      const indexY = Math.floor(landmark.y * arrayHeight);
-      if (0 <= indexX && indexX <= arrayWidth && 0 <= indexY && indexY <= arrayHeight) {
-        heatmapArray[indexY][indexX] += 1; // 行・列で指定するためY, Xの順
-      }
-    } else if (isNumberArray(landmarks)) {
-      // csvの場合の座標取得
-      let index = 0;
-      if (landmarks[1][HAND_INDEX.pinky.tip * 2 + 1] !== 0 &&
-        landmarks[FIRST_FIND_INDEX][HAND_INDEX.pinky.tip * 2 + 1] > landmarks[1][HAND_INDEX.pinky.tip * 2 + 1]) {
-        index = 1;
-      }
-      const landmarkX = landmarks[index][targetIndex * 2];
-      const landmarkY = landmarks[index][targetIndex * 2 + 1];
-      const indexX = Math.floor(landmarkX * arrayWidth);
-      const indexY = Math.floor(landmarkY * arrayHeight);
-      if (0 <= indexX && indexX <= arrayWidth && 0 <= indexY && indexY <= arrayHeight) {
-        heatmapArray[indexY][indexX] += 1; // 行・列で指定するためY, Xの順
-      }
+    } catch(e) {
+      console.error("calc heatmap error: " + e);
     }
   }
   return heatmapArray;

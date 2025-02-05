@@ -85,6 +85,7 @@ export const drawConnectors = (
     canvasCtx.stroke();
   });
 }
+
 // 顔の円などを書き加えて描画する
 export const drawLandmarksByDetected = (
   landmarks: number[][] | NormalizedLandmark[][], landmarkType: LandmarkType, 
@@ -98,7 +99,6 @@ export const drawLandmarksByDetected = (
 
     const canvasCtx = outputCanvas.getContext("2d")!;
     canvasCtx.save();
-
     canvasCtx.clearRect(0, 0, canvasWidth, canvasHeight);
 
     if (zoomLevel && zoomLevel !== 1 && landmarks) {

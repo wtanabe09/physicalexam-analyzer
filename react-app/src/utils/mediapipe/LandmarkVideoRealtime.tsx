@@ -37,8 +37,8 @@ export const LandmarkVideoRealtime: React.FC<Props> = ({
   useLandmarkChunk({ landmarks, landmarkType, isRecording, landmarksToParent });
 
   useEffect(() => {
-    const outputCanvas = outputCanvasRef.current;
     const sourceCanvas = sourceCanvasRef.current;
+    const outputCanvas = outputCanvasRef.current;
     if (landmarks && videoRef.current && sourceCanvas && outputCanvas) {
       drawImage(sourceCanvas, outputCanvas, 1, landmarks[1]);
       drawLandmarksByDetected(landmarks[1], landmarkType, sourceCanvas, outputCanvas, isDisplayPosture);

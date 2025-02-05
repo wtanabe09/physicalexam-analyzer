@@ -6,20 +6,21 @@ export const useVideoSource = (video: HTMLVideoElement | null, source: VideoSour
 
   useEffect(() => {
     if (!video || !source) return;
-
+    
     const setVideoSource = async () => {
       try {
         if (source instanceof Blob) {
-          const blobUrl = URL.createObjectURL(source);
-          video.src = blobUrl;
+          video.src = URL.createObjectURL(source);;
         } else {
           video.srcObject = source;
+          // 録画機能はこれがないと動画のスタートがされない。
+          video.play();
         }
 
-        await new Promise((resolve) => {
-          video.onloadedmetadata = resolve;
-        });
-        await video.play();
+        video.autoplay = true;
+        video.playsInline = true;
+        video.muted = true;
+
       } catch (error) {
         console.error("Error playing video:", error);
       }
@@ -31,13 +32,15 @@ export const useVideoSource = (video: HTMLVideoElement | null, source: VideoSour
       setCurrentTime(video.currentTime);
     };
     
-    video.addEventListener('timeupdate', updateCurrentTime);
+    // video.addEventListener('timeupdate', updateCurrentTime);
+    video.ontimeupdate = updateCurrentTime
     
     return () => {
       video.pause();
       video.src = '';
       video.srcObject = null;
-      video.removeEventListener('timeupdate', updateCurrentTime);
+      // video.removeEventListener('timeupdate', updateCurrentTime);
+      video.ontimeupdate = null;
       URL.revokeObjectURL(video.src);
     }
   }, [video, source]);
@@ -50,6 +53,24 @@ export const useVideoSource = (video: HTMLVideoElement | null, source: VideoSour
       video.currentTime = newTime;
     }
   };
+
+  // const handleLoadedMetadata = () {
+  //   if (video) {
+  //     console.log(`ビデオの長さ: ${video.duration}秒`)
+  //     setDurationInSec(videoRef.current.duration)
+  //   } else {
+  //     console.error('ビデオのメタデータを取得不能')
+  //   }
+  // }
+
+  // For Mantine Slider
+  // const handleSeekChange = (value: number) => {
+  //   const newTime = value;
+  //   setCurrentTime(newTime);
+  //   if (video) {
+  //     video.currentTime = newTime;
+  //   }
+  // };
 
   return { videoCurrentTime, handleSeekChange }
 };
