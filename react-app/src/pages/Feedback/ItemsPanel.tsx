@@ -22,11 +22,11 @@ export const ItemsPanel = () => {
   const totalDownloads = 4;
 
   // 進捗を更新する関数
-  const updateProgress = () => {
+  const updateProgress = useCallback(() => {
     const newCompleted = completedDownload.current + 1;
     setProgress((newCompleted / totalDownloads) * 100);
     return newCompleted;
-  };
+  }, []);
 
   useEffect(() => {
     if (videoBlob || landmarkChunkPose || landmarkChunkHand || landmarkChunkHandFrontCam) {
@@ -42,9 +42,9 @@ export const ItemsPanel = () => {
       }});
     };
     return () => {
-      setProgress(0)
+      setProgress(0);
     }
-  }, [landmarkChunkHand, landmarkChunkHandFrontCam, landmarkChunkPose, navigate, selectedVideoKey, videoBlob]);
+  }, [landmarkChunkHand, landmarkChunkHandFrontCam, landmarkChunkPose, navigate, selectedVideoKey, updateProgress, videoBlob]);
   
   // 選択したユーザー名のPrefixがついたS3ファイルKeyの一覧を取得
   const getObjectKeys = useCallback(async () => {

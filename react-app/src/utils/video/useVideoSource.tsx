@@ -20,7 +20,7 @@ export const useVideoSource = (video: HTMLVideoElement | null, source: VideoSour
         video.muted = true;
 
         // 録画機能はこれがないと動画のスタートがされない。
-        video.play().then(res => console.log("video play")).catch(e => console.error);
+        video.play().catch(console.error);
 
       } catch (error) {
         console.error("Error playing video:", error);
