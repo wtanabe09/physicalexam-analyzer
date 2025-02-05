@@ -32,7 +32,7 @@ export const RealtimeVideoPanel: React.FC<VideoPanelProps> = ({
       <video
         id="input_stream" ref={realtimeVideoRef}
         width={FRAMESIZE.VIDEO.WIDTH} height={FRAMESIZE.VIDEO.WIDTH}
-        autoPlay muted style={{ display: "none" }}
+        muted style={{ display: "none" }}
       />
       <div className="flex flex-wrap gap-4">
         <div>

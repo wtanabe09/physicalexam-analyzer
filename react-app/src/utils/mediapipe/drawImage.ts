@@ -1,7 +1,5 @@
 import { NormalizedLandmark } from "@mediapipe/tasks-vision";
 
-type Landmarks = number[] | NormalizedLandmark[];
-
 const getLandmarkCoordinates = (
   landmarks: number[] | NormalizedLandmark[],
   landmark: number | NormalizedLandmark,

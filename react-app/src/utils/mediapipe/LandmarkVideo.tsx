@@ -16,11 +16,11 @@ interface Props {
 
 export const LandmarkVideo: React.FC<Props> = ({ 
   videoRef, landmarkChunk, landmarkType,
-  isDisplayPosture, width, height, clipRegion, zoomLevel = 1
+  isDisplayPosture, width, height, clipRegion, zoomLevel
 }: Props) => {
   const outputCanvasRef = useRef<HTMLCanvasElement>(null);
   const sourceCanvasRef = useRef<HTMLCanvasElement>(null);
-  
+
   useLandmarkRender({
     videoRef, sourceCanvasRef, outputCanvasRef,
     landmarkChunk, landmarkType, isDisplayPosture, zoomLevel

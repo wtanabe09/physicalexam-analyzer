@@ -9,14 +9,17 @@ interface Props {
 
 export const useClippedVideo = ({videoRef, clippedCanvasRef, clipRegion}: Props) => {
   useEffect(() => {
-    if (videoRef.current && clippedCanvasRef.current && clipRegion) {
-      const clippedCanvas = clippedCanvasRef.current;
+    const video = videoRef.current;
+    const clippedCanvas = clippedCanvasRef.current;
+    if (video && clippedCanvas && clipRegion) {
+      // video.currentTime = 1;
       const ctx = clippedCanvas.getContext('2d');
       
       const drawClippedFrame = () => {
-        if (videoRef.current && ctx) {
-          ctx.drawImage(
-            videoRef.current,
+        if (video && ctx) {
+          ctx.clearRect(0, 0, clippedCanvas.width, clippedCanvas.height);
+
+          ctx.drawImage( video,
             clipRegion.x, clipRegion.y, clipRegion.width, clipRegion.height,
             0, 0, clippedCanvas.width, clippedCanvas.height
           );
@@ -27,9 +30,9 @@ export const useClippedVideo = ({videoRef, clippedCanvasRef, clipRegion}: Props)
       drawClippedFrame();
     }
     return () => {
-      if (clippedCanvasRef.current) {
-        const ctx = clippedCanvasRef.current.getContext('2d');
-        if (ctx) ctx.clearRect(0, 0, clippedCanvasRef.current.width, clippedCanvasRef.current.height);
+      if (clippedCanvas) {
+        const ctx = clippedCanvas.getContext('2d');
+        if (ctx) ctx.clearRect(0, 0, clippedCanvas.width, clippedCanvas.height);
       }
     }
   }, [clipRegion, clippedCanvasRef, videoRef]);

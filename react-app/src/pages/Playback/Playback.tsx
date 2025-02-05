@@ -1,21 +1,22 @@
-import { AppShell, Group, Radio, Stack} from "@mantine/core";
+import { AppShell } from "@mantine/core";
 import { VideoPanel } from "./VideoPanel ";
 import { ControlPanel } from "./ControlPanel";
 import { CameraRegions } from "../../exports/consts";
 import { useLocation } from "react-router-dom";
 import { ClipRegion, LandmarkChunk } from "../../exports/types";
 import { useState } from "react";
-import { ToggleButton } from "../../utils/uiux/ToggleButton";
-import { ZoomLevelBar } from "../../utils/uiux/ZoomLevelBar";
+import { ControlInMobile } from "./ControlInMobile";
 
 export const Playback = () => {
-  const location = useLocation();
-  const { videoBlob, poseLandmarks, handLandmarksTopCamera, handLandmarksFrontCamera} = location.state as {
+  type LocationState = {
     videoBlob: Blob,
     poseLandmarks: LandmarkChunk,
     handLandmarksTopCamera: LandmarkChunk,
     handLandmarksFrontCamera: LandmarkChunk,
   };
+
+  const location = useLocation();
+  const { videoBlob, poseLandmarks, handLandmarksTopCamera, handLandmarksFrontCamera } = location.state as LocationState
 
   const [isDisplayPosture, setIsDisplayPosture] = useState<boolean>(true);
   const [zoomLevelFrontCam, setZoomLevelFrontCam] = useState<number>(1);
@@ -38,69 +39,41 @@ export const Playback = () => {
 
   return(
     <>
-      <AppShell.Navbar visibleFrom="sm">
-          <ControlPanel
-            isDisplayPosture={isDisplayPosture}
-            setIsDisplayPosture={setIsDisplayPosture}
-            zoomLevelTopCam={zoomLevelTopCam}
-            setZoomLevelTopCam={setZoomLevelTopCam}
-            zoomLevelFrontCam={zoomLevelFrontCam}
-            setZoomLevelFrontCam={setZoomLevelFrontCam}
-            radioValue={radioValue}
-            setCamera={setCamera}
-          />
-        </AppShell.Navbar>
-        <AppShell.Main>
-          <VideoPanel
-            videoBlob={videoBlob}
-            poseLandmarks={poseLandmarks}
-            handLandmarksTopCamera={handLandmarksTopCamera}
-            handLandmarksFrontCamera={handLandmarksFrontCamera}
-            heatmapLandmarks={heatmapLandmarks}
-            heatmapCamera={heatmapCamera}
-            isDisplayPosture={isDisplayPosture}
-            zoomLevelFrontCam={zoomLevelFrontCam}
-            zoomLevelTopCam={zoomLevelTopCam}
-          />
-
-          <Stack p={5} m={10} hiddenFrom="sm">
-            <div className="mb-2 pb-4 border-b">
-              <ToggleButton
-                labelText="骨格マーキング表示"
-                status={isDisplayPosture}
-                setState={setIsDisplayPosture}
-              />
-            </div>
-            <div className="landmark-control border-b pb-8">
-              <p className="mb-2">カメラ拡大率</p>
-              <div className="mb-8">
-                <ZoomLevelBar
-                  label="(2)真上カメラ 拡大率"
-                  zoomLevel={zoomLevelTopCam}
-                  setZoomLevel={setZoomLevelTopCam}
-                />
-              </div>
-              <div>
-                <ZoomLevelBar
-                  label="(3)患者正面カメラ 拡大率"
-                  zoomLevel={zoomLevelFrontCam}
-                  setZoomLevel={setZoomLevelFrontCam}
-                />
-              </div>
-            </div>
-            <Group className="border-b mb-4 pb-4">
-              <p className="pb-1">ヒートマップ対象カメラ選択</p>
-              <Radio.Group
-                value={radioValue}
-                onChange={(event) => setCamera(event)}
-              >
-                <Radio value="Top" label="(2) 上カメラ"/>
-                <Radio value="Front" label="(3) 患者カメラ"/>
-              </Radio.Group>
-            </Group>
-          </Stack>
-
-        </AppShell.Main>
+      <AppShell.Navbar visibleFrom="sm" >
+        <ControlPanel
+          isDisplayPosture={isDisplayPosture}
+          setIsDisplayPosture={setIsDisplayPosture}
+          zoomLevelTopCam={zoomLevelTopCam}
+          setZoomLevelTopCam={setZoomLevelTopCam}
+          zoomLevelFrontCam={zoomLevelFrontCam}
+          setZoomLevelFrontCam={setZoomLevelFrontCam}
+          radioValue={radioValue}
+          setCamera={setCamera}
+        />
+      </AppShell.Navbar>
+      <AppShell.Main>
+        <VideoPanel
+          videoBlob={videoBlob}
+          poseLandmarks={poseLandmarks}
+          handLandmarksTopCamera={handLandmarksTopCamera}
+          handLandmarksFrontCamera={handLandmarksFrontCamera}
+          heatmapLandmarks={heatmapLandmarks}
+          heatmapCamera={heatmapCamera}
+          isDisplayPosture={isDisplayPosture}
+          zoomLevelFrontCam={zoomLevelFrontCam}
+          zoomLevelTopCam={zoomLevelTopCam}
+        />
+        <ControlInMobile
+          isDisplayPosture={isDisplayPosture}
+          setIsDisplayPosture={setIsDisplayPosture}
+          zoomLevelTopCam={zoomLevelTopCam}
+          setZoomLevelTopCam={setZoomLevelTopCam}
+          zoomLevelFrontCam={zoomLevelFrontCam}
+          setZoomLevelFrontCam={setZoomLevelFrontCam}
+          radioValue={radioValue}
+          setCamera={setCamera}
+        />
+      </AppShell.Main>
     </>
   )
 }

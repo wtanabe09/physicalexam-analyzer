@@ -7,14 +7,13 @@ interface Props {
 
 export const useLandmarkVideoControl = ({ videoRef, videoBlob }: Props) => {
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
-  const [isLooping, setIsLooping] = useState<boolean>(false);
-
+  // const [isLooping, setIsLooping] = useState<boolean>(false);
+  const isLoopingRef = useRef<boolean>(false);
   const playPromiseRef = useRef<Promise<void> | null>(null);
 
   const togglePlayPause = useCallback(() => {
-    if (!videoRef.current) return;
+    if (!videoRef.current?.src || !videoBlob) return;
     const video = videoRef.current;
-
     if (video.paused) {
       playPromiseRef.current = video.play().catch(console.error);
       setIsPlaying(true);
@@ -22,18 +21,16 @@ export const useLandmarkVideoControl = ({ videoRef, videoBlob }: Props) => {
       video.pause();
       setIsPlaying(false);
     }
-  }, [setIsPlaying, videoRef]);
+  }, [videoBlob, videoRef]);
 
   const toggleLooping = useCallback(() => {
     if (!videoRef.current) return;
-    videoRef.current.loop = !isLooping;
-    setIsLooping(prev => !prev);
-    setIsPlaying(false);
-  }, [isLooping, setIsPlaying, videoRef]);
+    videoRef.current.loop = !isLoopingRef.current;
+    isLoopingRef.current = !isLoopingRef.current;
+  }, [videoRef]);
 
   const handleLoaded = useCallback(() => {
-    if (!videoRef.current) return;
-    if (!videoRef.current.paused) {
+    if (videoRef.current && !videoRef.current.paused) {
       setIsPlaying(true);
     }
   }, [setIsPlaying, videoRef]);
@@ -41,12 +38,8 @@ export const useLandmarkVideoControl = ({ videoRef, videoBlob }: Props) => {
   const handleEnded = useCallback(() => {
     if (!videoRef.current) return;
     videoRef.current.currentTime = 0;
-    if (isLooping) {
-      playPromiseRef.current = videoRef.current.play().catch(console.error);
-      setIsPlaying(true);
-    }
     setIsPlaying(false);
-  }, [isLooping, setIsPlaying, videoRef]);
+  }, [setIsPlaying, videoRef]);
 
   useEffect(() => {
     if (!videoRef.current || !videoBlob) return;
@@ -54,7 +47,9 @@ export const useLandmarkVideoControl = ({ videoRef, videoBlob }: Props) => {
     const video = videoRef.current;
     const objectUrl = URL.createObjectURL(videoBlob);
     video.src = objectUrl;
-    video.loop = isLooping;
+
+    video.onloadeddata = handleLoaded;
+    video.onended = handleEnded;
 
     const cleanup = () => {
       video.pause();
@@ -63,20 +58,14 @@ export const useLandmarkVideoControl = ({ videoRef, videoBlob }: Props) => {
       setIsPlaying(false);
     };
 
-    video.addEventListener('loadeddata', handleLoaded);
-    video.addEventListener('ended', handleEnded);
-
     return () => {
       cleanup();
-      video.removeEventListener('loadeddata', handleLoaded);
-      video.removeEventListener('ended', handleEnded);
+      video.onloadeddata = null
+      video.onended = null
     };
-  }, [videoBlob, isLooping, handleLoaded, handleEnded, videoRef]);
+  }, [videoBlob, handleLoaded, handleEnded, videoRef]);
 
   return {
-    isPlaying,
-    isLooping,
-    togglePlayPause,
-    toggleLooping,
+    isPlaying, isLoopingRef, handleLoaded, handleEnded, togglePlayPause, toggleLooping,
   };
 };
