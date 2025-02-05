@@ -13,12 +13,11 @@ export const useMediaStream = ({ width, height, frameRate }: MediaStreamOptions)
 
     const getMedia = async () => {
       try {
-        console.log(`get user media: ${width}, ${height}, ${frameRate}`);
-
         navigator.mediaDevices.getUserMedia({
           video: { width: width, height: height, frameRate: frameRate},
           audio: false,
         }).then(mediaStream => setStream(mediaStream));
+        console.log(`get user media: ${width}, ${height}, ${frameRate}`);
 
       } catch (error) {
         console.error("Failed to get media stream:", error);
@@ -30,6 +29,7 @@ export const useMediaStream = ({ width, height, frameRate }: MediaStreamOptions)
     return () => {
       stream?.getTracks().forEach(track => track.stop());
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [width, height, frameRate]);
 
   return { stream };
