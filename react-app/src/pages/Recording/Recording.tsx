@@ -61,7 +61,7 @@ export const Recording = () => {
         uploadThisSession();
 
         // 画面遷移はRecordingに書きたいし、uploadは各コンポーネントにかきたい
-        navigate(`/video/${timestamp}`, { state: {
+        navigate(`/video/${selectedTechnique.value}-${timestamp}`, { state: {
           videoBlob: recordedBlob,
           poseLandmarks: poseLandmarkChunk,
           handLandmarksTopCamera: handLandmarkChunkTopCamera,

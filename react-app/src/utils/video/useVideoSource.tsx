@@ -13,13 +13,14 @@ export const useVideoSource = (video: HTMLVideoElement | null, source: VideoSour
           video.src = URL.createObjectURL(source);;
         } else {
           video.srcObject = source;
-          // 録画機能はこれがないと動画のスタートがされない。
-          video.play();
         }
 
         video.autoplay = true;
         video.playsInline = true;
         video.muted = true;
+
+        // 録画機能はこれがないと動画のスタートがされない。
+        video.play().then(res => console.log("video play")).catch(e => console.error);
 
       } catch (error) {
         console.error("Error playing video:", error);

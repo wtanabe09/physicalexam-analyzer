@@ -26,12 +26,12 @@ export const useS3Downloader = (selectedVideoKey: string | null): VideoSelectBox
       const idToken = session.tokens?.idToken?.toString();
 
       const resVideo = await fetchBlob('GET', idToken!, null, session.userSub!, techniqueId, timestamp, "all", "mp4");
-      const resCsvPose = fetchBlob('GET', idToken!, null, session.userSub!, techniqueId, timestamp, "pose", "csv");
+      const resCsvPose = await fetchBlob('GET', idToken!, null, session.userSub!, techniqueId, timestamp, "pose", "csv");
       const resCsvHand = fetchBlob('GET', idToken!, null, session.userSub!, techniqueId, timestamp, "hand", "csv");
       const resCsvHandP = fetchBlob('GET', idToken!, null, session.userSub!, techniqueId, timestamp, "hand-front", "csv");
  
       resVideo?.blob().then(video => setVideoBlob(video));
-      resCsvPose?.then(res => res?.blob().then(pose => setCsvBlobPose(pose)));
+      resCsvPose?.blob().then(pose => setCsvBlobPose(pose));
       resCsvHand?.then(res => res?.blob().then(hand => setCsvBlobHand(hand)));
       resCsvHandP?.then(res => res?.blob().then(handp => setCsvBlobHandFrontCam(handp)));
 

@@ -68,7 +68,6 @@ export const fetchObjectKeys = async (userSub: string) => {
       }),
     });
     const { keys } = await res.json();
-    console.log(keys);
     console.log("### done: fetch object keys ### ");
     return keys as Promise<string[]>
   } catch (error) {
