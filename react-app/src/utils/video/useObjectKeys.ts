@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { ComboboxData, ComboboxItem } from "@mantine/core";
-import { fetchObjectKeys } from "../s3/s3Utils";
+import { fetchObjectKeys } from "../aws/s3Util";
 
 interface Props {
   selectedDate: ComboboxItem | null,
@@ -17,14 +17,11 @@ export const useObjectKeys = ({selectedDate, selectedUser}: Props): ReturnProps 
   const [ objectKeys, setOptions ] = useState<ComboboxData>([]);
 
   // 選択したユーザー名のPrefixがついたS3ファイルKeyの一覧を取得
-  const onGetObjectKeys = useCallback(() => {
+  const onGetObjectKeys = useCallback(async () => {
     if (!selectedUser) return;
 
-    const fetchKeys = async () => {
-      const filteredKeys = await fetchObjectKeys(selectedUser.value);
-      setOptions(filteredKeys);
-    }
-    fetchKeys();
+    const filteredKeys = await fetchObjectKeys(selectedUser.value);
+    setOptions(filteredKeys!);
 
   }, [selectedUser]);
 

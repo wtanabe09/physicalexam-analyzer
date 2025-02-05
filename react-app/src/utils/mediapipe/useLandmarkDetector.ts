@@ -3,17 +3,15 @@
 import { useEffect, useState, RefObject, useRef, useCallback } from "react";
 import { NormalizedLandmark } from "@mediapipe/tasks-vision";
 import { ClipRegion, Landmarker, LandmarkType } from "../../exports/types";
-import { POSE_INDEX } from "../../exports/poseLandmarkIndex";
-import { HAND_INDEX } from "../../exports/handLandmarkIndex";
-import { CameraRegions } from "../../exports/consts";
 import { setupHandLandmarker, setupPoseLandmarker } from "./modelSettings";
+// import { CameraRegions } from "../../exports/consts";
 
 const ONE_SECOND_MS: number = 1000;
 const UPDATE_INTERVAL: number = 100; // ms
 
-const getKeyByValue = (object: any, value: any) => {
-  return Object.keys(object).find(key => object[key] === value);
-}
+// const getKeyByValue = (object: any, value: any) => {
+//   return Object.keys(object).find(key => object[key] === value);
+// }
 
 const initializeLandmarker = async (landmarkerType: LandmarkType): Promise<Landmarker> => {
   return landmarkerType === 'pose' ? await setupPoseLandmarker() : await setupHandLandmarker();
@@ -30,7 +28,7 @@ export const useLandmarkDetector = (
   const landmarksRef = useRef<[number, NormalizedLandmark[][]] | null>(null);
   const lastVideoTimeRef = useRef<number>(-1);
   const renderLoopIdRef = useRef<number | null>(null);
-  const regionKey = getKeyByValue(CameraRegions, clipRegion);
+  // const regionKey = getKeyByValue(CameraRegions, clipRegion);
 
 
   const detectLandmarks = useCallback((video: HTMLVideoElement, canvas: HTMLCanvasElement): [number, NormalizedLandmark[][]] | null => {

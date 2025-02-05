@@ -1,7 +1,6 @@
 import { techniqueOptions } from "../../exports/consts";
 import { RecordingButton } from "../../utils/video/RecordingButton";
-import { ComboboxItem, Select } from "@mantine/core";
-import { ToggleButton } from "../../utils/uiux/ToggleButton";
+import { Checkbox, ComboboxItem, Select } from "@mantine/core";
 import { useListUsers } from "../../utils/user/useListUsers";
 
 interface ControlPanelProps {
@@ -54,10 +53,11 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
             startRecording={startRecording}
             stopRecording={stopRecording}
           />
-          <ToggleButton
-            status={isDisplayPosture}
-            setState={setIsDisplayPosture}
-            labelText="骨格マーカー表示"
+          <Checkbox
+            label="骨格マーキング表示"
+            checked={isDisplayPosture}
+            onChange={(event) => setIsDisplayPosture(event.currentTarget.checked)}
+            color="cyan"
           />
           {/* <ToggleButton
             status={isLocalSave}
