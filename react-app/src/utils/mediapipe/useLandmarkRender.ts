@@ -1,7 +1,7 @@
 import { NormalizedLandmark } from "@mediapipe/tasks-vision";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { LandmarkType, MyLandmarkType } from "../../exports/types";
-import { drawLandmarksByDetected } from "./drawLandmarks";
+import { drawLandmarksByDetected } from "./drawLandmarksByDetected";
 import { drawImage } from "./drawImage";
 
 interface Props {
@@ -30,6 +30,8 @@ export const useLandmarkRender = ({
   videoRef, sourceCanvasRef, outputCanvasRef,
   landmarkChunk, landmarkType, isDisplayPosture, zoomLevel
 }: Props) => {
+  const animationFrameIdRef = useRef<number | null>(null);
+  const lastCounterRef = useRef<number>(0);
 
   const renderFrame = useCallback((landmarks: MyLandmarkType) => {
     const sourceCanvas = sourceCanvasRef.current;
@@ -38,9 +40,8 @@ export const useLandmarkRender = ({
     
     try {
       if (isNormalizedLandmarkArray(landmarks) || isNumberArray(landmarks)) {
-        drawLandmarksByDetected(
-          landmarks, landmarkType,
-          sourceCanvas, outputCanvas,
+        drawLandmarksByDetected( 
+          landmarks, landmarkType, sourceCanvas, outputCanvas,
           isDisplayPosture, zoomLevel
         );
       } else {
@@ -58,8 +59,7 @@ export const useLandmarkRender = ({
 
     const currentTime = video.currentTime * 1000;
     const adjustedTime = currentTime + DELAY;
-    let counter = 0;
-    // ランドマークのタイムスタンプが現在のビデオの再生時間よりも前の場合は、次のランドマークを探す
+    let counter = lastCounterRef.current;
     while (counter < landmarkChunk.length && landmarkChunk[counter][TIMESTAMPCOL] < adjustedTime) {
       counter++;
     }
@@ -69,7 +69,7 @@ export const useLandmarkRender = ({
       renderFrame(landmarks);
     }
 
-    requestAnimationFrame(renderLoop);
+    animationFrameIdRef.current = requestAnimationFrame(renderLoop);
   }, [landmarkChunk, renderFrame, videoRef]);
 
 
@@ -78,11 +78,14 @@ export const useLandmarkRender = ({
     const canvas = outputCanvasRef.current;
     
     if (video) {
-      renderLoop();
+      animationFrameIdRef.current = requestAnimationFrame(renderLoop);
     }
 
     return () => {
-      if (video && canvas) {
+      if (animationFrameIdRef.current !== null) {
+        cancelAnimationFrame(animationFrameIdRef.current);
+      }
+      if (canvas) {
         canvas.getContext('2d')?.clearRect(0, 0, canvas.width, canvas.height);
       }
     };

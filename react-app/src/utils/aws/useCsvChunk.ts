@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
-import { FormattedCsvType, LandmarkType } from "../../exports/types";
+import { FormattedCsv, LandmarkType } from "../../exports/types";
 import { NormalizedLandmark } from "@mediapipe/tasks-vision";
 import { NAN_ARRAY } from "../../exports/consts";
 
-export const useCsvChunk = (csvBlob: Blob, landmarkType: LandmarkType) => {
-  const [landmarkChunk, setLandmarkChunk] = useState<FormattedCsvType | null>(null);
+export const useCsvChunk = (csvBlob: Blob|null, landmarkType: LandmarkType) => {
+  const [landmarkChunk, setLandmarkChunk] = useState<FormattedCsv|null>(null);
 
   // Read the blob as text
   const readBlobAsText = useCallback((blob: Blob): Promise<string> => {
@@ -17,7 +17,7 @@ export const useCsvChunk = (csvBlob: Blob, landmarkType: LandmarkType) => {
   }, []);
 
   // Process the CSV data
-  const processCsv = useCallback((csvText: string): FormattedCsvType => {
+  const processCsv = useCallback((csvText: string): FormattedCsv => {
     const firstIndex = landmarkType === 'pose' ? [1, 67] : [1, 43];
     const secondIndex = landmarkType === 'pose' ? [67, 133] : [43, 85];
     return csvText.split("\n").map((data) => {
@@ -29,7 +29,7 @@ export const useCsvChunk = (csvBlob: Blob, landmarkType: LandmarkType) => {
     });
   }, [landmarkType]);
 
-  const blobToCsv = useCallback(async (blob: Blob): Promise<FormattedCsvType> => {
+  const blobToCsv = useCallback(async (blob: Blob): Promise<FormattedCsv> => {
     try {
       const csvText = await readBlobAsText(blob);
       return processCsv(csvText);

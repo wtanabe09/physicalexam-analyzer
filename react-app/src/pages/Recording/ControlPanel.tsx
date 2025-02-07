@@ -1,7 +1,6 @@
 import { techniqueOptions } from "../../exports/consts";
 import { RecordingButton } from "../../utils/video/RecordingButton";
-import { Checkbox, ComboboxItem, Select } from "@mantine/core";
-import { useListUsers } from "../../utils/user/useListUsers";
+import { Box, Checkbox, ComboboxItem, Select, Stack, Title } from "@mantine/core";
 
 interface ControlPanelProps {
   selectedUser: ComboboxItem | null;
@@ -23,19 +22,19 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   isDisplayPosture, setIsDisplayPosture,
   isLocalSave, setIsLocalSave,
 }) => {
-  const userOptions = useListUsers();
+  const userOptions = [{value: "", label: ""}];
   return (
-    <div className="container p-2">
-      <div className="select-session-container">
-        <h2 className="text-lg font-semibold mb-2">演習者選択</h2>
-        <div>
+    <Stack pt={10}>
+      <Box className="select-session-container">
+        <Title order={3} >演習者選択</Title>
+        <Box>
           {selectedUser && selectedTechnique ? 
             <p className="text-slate-400 mb-2">録画は保存されます</p> :
             <p className="text-slate-400 mb-2">ユーザーと手技を選択してください</p>
           }
-        </div>
+        </Box>
         <Select
-          data={userOptions}
+          data={userOptions!}
           value={selectedUser ? selectedUser.value : null}
           onChange={(_value, option) => setUserValue(option)}
           placeholder="ユーザーを選択してください"
@@ -46,25 +45,25 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           onChange={(_value, option) => setTechniqueValue(option)}
           placeholder="手技を選択してください"
         />
-      </div>
-        <div className="">
-          <RecordingButton
-            isRecording={isRecording}
-            startRecording={startRecording}
-            stopRecording={stopRecording}
-          />
-          <Checkbox
-            label="骨格マーキング表示"
-            checked={isDisplayPosture}
-            onChange={(event) => setIsDisplayPosture(event.currentTarget.checked)}
-            color="cyan"
-          />
-          {/* <ToggleButton
-            status={isLocalSave}
-            setState={setIsLocalSave}
-            labelText="AR動画表示"
-          /> */}
-        </div>
-    </div>
+      </Box>
+      <Box>
+        <RecordingButton
+          isRecording={isRecording}
+          startRecording={startRecording}
+          stopRecording={stopRecording}
+        />
+        <Checkbox
+          label="骨格マーキング表示"
+          checked={isDisplayPosture}
+          onChange={(event) => setIsDisplayPosture(event.currentTarget.checked)}
+          color="cyan"
+        />
+        {/* <ToggleButton
+          status={isLocalSave}
+          setState={setIsLocalSave}
+          labelText="AR動画表示"
+        /> */}
+      </Box>
+    </Stack>
   )
 };

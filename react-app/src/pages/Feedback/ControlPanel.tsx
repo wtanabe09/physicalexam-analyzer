@@ -1,6 +1,5 @@
 import { Select, Stack } from "@mantine/core"
 import { dateOptions } from "../../exports/consts";
-import { useListUsers } from "../../utils/user/useListUsers";
 
 interface Props {
   selectedDate: any;
@@ -13,7 +12,7 @@ export const ControlPanel: React.FC<Props> = ({
   selectedDate, setDateValue,
   selectedUser, setUserValue,
 }) => {
-  const listUsers = useListUsers();
+  const listUsers = [{value: "", label: ""}];
 
   return (
     <Stack p="md" className="bg-white">
@@ -27,7 +26,7 @@ export const ControlPanel: React.FC<Props> = ({
       />
       <Select
         className="w-full"
-        data={listUsers}
+        data={listUsers!}
         value={selectedUser ? selectedUser.value : null}
         onChange={(_value, option) => setUserValue(option)}
         placeholder="ユーザーを選択してください"

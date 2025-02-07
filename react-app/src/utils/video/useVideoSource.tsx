@@ -1,50 +1,27 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { VideoSource } from "../../exports/types";
 
-export const useVideoSource = (video: HTMLVideoElement | null, source: VideoSource | null) => {
+export const useVideoSource = (videoRef: React.RefObject<HTMLVideoElement> | null, source: VideoSource | null) => {
   const [videoCurrentTime, setCurrentTime] = useState<number>(0);
 
-  useEffect(() => {
+  const video = videoRef?.current
+
+  const togglePlayPause = useCallback(() => {
+    const video = videoRef?.current;
     if (!video || !source) return;
-    
-    const setVideoSource = async () => {
-      try {
-        if (source instanceof Blob) {
-          video.src = URL.createObjectURL(source);;
-        } else {
-          video.srcObject = source;
-        }
 
-        video.autoplay = true;
-        video.playsInline = true;
-        video.muted = true;
-
-        // 録画機能はこれがないと動画のスタートがされない。
-        video.play().catch(console.error);
-
-      } catch (error) {
-        console.error("Error playing video:", error);
-      }
-    }
-
-    setVideoSource();
-
-    const updateCurrentTime = () => {
-      setCurrentTime(video.currentTime);
-    };
-    
-    // video.addEventListener('timeupdate', updateCurrentTime);
-    video.ontimeupdate = updateCurrentTime
-    
-    return () => {
+    if (video.paused) {
+      video.play().catch(console.error);
+    } else {
       video.pause();
-      video.src = '';
-      video.srcObject = null;
-      // video.removeEventListener('timeupdate', updateCurrentTime);
-      video.ontimeupdate = null;
-      URL.revokeObjectURL(video.src);
     }
-  }, [video, source]);
+    
+  }, [source]);
+
+  const toggleLooping = () => {
+    if (!video) return;
+    video.loop = !video.loop;
+  };
 
   // シークバーの変更ハンドラ
   const handleSeekChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -55,23 +32,53 @@ export const useVideoSource = (video: HTMLVideoElement | null, source: VideoSour
     }
   };
 
-  // const handleLoadedMetadata = () {
-  //   if (video) {
-  //     console.log(`ビデオの長さ: ${video.duration}秒`)
-  //     setDurationInSec(videoRef.current.duration)
-  //   } else {
-  //     console.error('ビデオのメタデータを取得不能')
-  //   }
-  // }
+  useEffect(() => {
+    if (!video || !source) return;
+    
+    let objectUrl:string;
+    try {
+      if (source instanceof Blob) {
+        objectUrl = URL.createObjectURL(source);;
+        video.src = objectUrl
+      } else if (source instanceof MediaStream) {
+        video.srcObject = source;
+      } else {
+        console.error("Invalid video source type:", source);
+      }
 
-  // For Mantine Slider
-  // const handleSeekChange = (value: number) => {
-  //   const newTime = value;
-  //   setCurrentTime(newTime);
-  //   if (video) {
-  //     video.currentTime = newTime;
-  //   }
-  // };
+      // video.autoplay = true;
+      // video.playsInline = true;
+      video.muted = true;
+      video.play().catch(console.error);
 
-  return { videoCurrentTime, handleSeekChange }
+    } catch (error) {
+      console.error("Error playing video:", error);
+    }
+
+    let animationFrameId: number;
+
+    const updateCurrentTime = () => {
+      setCurrentTime(video.currentTime);
+      // animationFrameId = requestAnimationFrame(updateCurrentTime);
+    };
+    // video.addEventListener("timeupdate", updateCurrentTime);
+
+    // animationFrameId = requestAnimationFrame(updateCurrentTime);
+    
+    // video.addEventListener('timeupdate', updateCurrentTime);
+    video.ontimeupdate = updateCurrentTime
+    
+    return () => {
+      if (video) {
+        // video.pause();
+        URL.revokeObjectURL(objectUrl);
+        // cancelAnimationFrame(animationFrameId);
+        // video.removeEventListener("timeupdate", updateCurrentTime);
+      }
+    }
+  }, [video, source]);
+
+  return { 
+    videoCurrentTime, handleSeekChange, togglePlayPause, toggleLooping,
+  }
 };

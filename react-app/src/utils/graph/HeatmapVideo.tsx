@@ -3,7 +3,7 @@ import { useHeatmap } from "./useHeatmapArray";
 import { ClipRegion, LandmarkChunk } from "../../exports/types";
 import { ClippedVideo } from "../video/ClippedVideo";
 import { useRef } from "react";
-import { useHeatmapRender } from "./useHeatmapRender";
+import { useHeatmapRender } from "../mediapipe/useHeatmapRender";
 
 interface Props {
   originVideoRef: React.RefObject<HTMLVideoElement>,

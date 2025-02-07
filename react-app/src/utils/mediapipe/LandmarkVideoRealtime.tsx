@@ -9,7 +9,7 @@ import { RefObject, useEffect, useRef } from "react";
 import { useLandmarkDetector } from "./useLandmarkDetector";
 import { ClipRegion, LandmarkChunk, LandmarkType } from "../../exports/types";
 import { ClippedVideo } from "../video/ClippedVideo";
-import { drawLandmarksByDetected } from "./drawLandmarks";
+import { drawLandmarksByDetected } from "./drawLandmarksByDetected";
 import { useLandmarkChunk } from "./useLnadmarkChunk";
 import { drawImage } from "./drawImage";
 

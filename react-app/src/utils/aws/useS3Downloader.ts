@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
-import { fetchBlob } from "./s3Util";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { fetchFileFromS3, fetchPresignedUrl } from "./s3Util";
 import { fetchAuthSession } from "aws-amplify/auth";
 
 interface VideoSelectBoxState {
@@ -15,8 +15,10 @@ export const useS3Downloader = (selectedVideoKey: string | null): VideoSelectBox
   const [csvBlobHand, setCsvBlobHand] = useState<Blob | null>(null);
   const [csvBlobHandFrontCam, setCsvBlobHandFrontCam] = useState<Blob | null>(null);
 
+  const isMountedRef = useRef(true);
+
   
-  const fetchDatas = useCallback(async () => {
+  const fetchDatas = useCallback(async (isMounted: boolean) => {
     if (!selectedVideoKey) return;
 
     const [techniqueId, mp4FileName] = selectedVideoKey.split("-");
@@ -24,17 +26,31 @@ export const useS3Downloader = (selectedVideoKey: string | null): VideoSelectBox
     try {
       const session = await fetchAuthSession();
       const idToken = session.tokens?.idToken?.toString();
+      if (!idToken) return;
 
-      const resVideo = await fetchBlob('GET', idToken!, null, session.userSub!, techniqueId, timestamp, "all", "mp4");
-      const resCsvPose = await fetchBlob('GET', idToken!, null, session.userSub!, techniqueId, timestamp, "pose", "csv");
-      const resCsvHand = fetchBlob('GET', idToken!, null, session.userSub!, techniqueId, timestamp, "hand", "csv");
-      const resCsvHandP = fetchBlob('GET', idToken!, null, session.userSub!, techniqueId, timestamp, "hand-front", "csv");
- 
-      resVideo?.blob().then(video => setVideoBlob(video));
-      resCsvPose?.blob().then(pose => setCsvBlobPose(pose));
-      resCsvHand?.then(res => res?.blob().then(hand => setCsvBlobHand(hand)));
-      resCsvHandP?.then(res => res?.blob().then(handp => setCsvBlobHandFrontCam(handp)));
+      // 1. プリサインドURLを取得
+      const presignedUrls = await Promise.allSettled([
+        fetchPresignedUrl("GET", "mp4", idToken, null, techniqueId, timestamp, "all"),
+        fetchPresignedUrl("GET", "csv", idToken, null, techniqueId, timestamp, "pose"),
+        fetchPresignedUrl("GET", "csv", idToken, null, techniqueId, timestamp, "hand"),
+        fetchPresignedUrl("GET", "csv", idToken, null, techniqueId, timestamp, "hand-front"),
+      ]);
 
+      // 2. 成功したURLだけを使ってダウンロード
+      const results = await Promise.allSettled([
+        presignedUrls[0].status === "fulfilled" && presignedUrls[0].value ? fetchFileFromS3(presignedUrls[0].value) : null,
+        presignedUrls[1].status === "fulfilled" && presignedUrls[1].value ? fetchFileFromS3(presignedUrls[1].value) : null,
+        presignedUrls[2].status === "fulfilled" && presignedUrls[2].value ? fetchFileFromS3(presignedUrls[2].value) : null,
+        presignedUrls[3].status === "fulfilled" && presignedUrls[3].value ? fetchFileFromS3(presignedUrls[3].value) : null,
+      ]);
+
+      if (!isMounted) return; // アンマウントチェック
+
+      // 3. 成功したデータのみセット
+      if (results[0].status === "fulfilled" && results[0].value) setVideoBlob(results[0].value);
+      if (results[1].status === "fulfilled" && results[1].value) setCsvBlobPose(results[1].value);
+      if (results[2].status === "fulfilled" && results[2].value) setCsvBlobHand(results[2].value);
+      if (results[3].status === "fulfilled" && results[3].value) setCsvBlobHandFrontCam(results[3].value);
 
     } catch (err) {
       console.error('Error fetching video:', err);
@@ -42,16 +58,22 @@ export const useS3Downloader = (selectedVideoKey: string | null): VideoSelectBox
   }, [selectedVideoKey]);
 
   const cleanupDatas = useCallback(() => {
-      setVideoBlob(null);
-      setCsvBlobPose(null);
-      setCsvBlobHand(null);
+    setVideoBlob(null);
+    setCsvBlobPose(null);
+    setCsvBlobHand(null);
+    setCsvBlobHandFrontCam(null);
   }, []);
 
   useEffect(() => {
+    isMountedRef.current = true;
+
     if (selectedVideoKey) {
-      fetchDatas();
+      fetchDatas(isMountedRef.current);
     } else {
       cleanupDatas();
+    }
+    return () => {
+      isMountedRef.current = false;
     }
   }, [selectedVideoKey, fetchDatas, cleanupDatas]);
 

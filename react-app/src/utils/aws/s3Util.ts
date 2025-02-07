@@ -5,22 +5,28 @@ const getPresignedUrl = process.env.REACT_APP_API_GET_PRESIGNED_URL;
 
 export const getTimestamp = () => {
   const today = new Date();
-  const ymd = today.toLocaleDateString("ja-JP", {
-    year: "numeric", month: "2-digit", day: "2-digit",
-  }).replaceAll("/", "");
-  const time = today.toLocaleTimeString("ja-JP", {hour12: false}).replaceAll(":", "");
-  return ymd + "T" + time;
-}
+  const ymd = [
+    today.getFullYear(),
+    String(today.getMonth() + 1).padStart(2, '0'),
+    String(today.getDate()).padStart(2, '0')
+  ].join('');
 
-// "get", "put" メソッドで使用
-export const fetchBlob = async (
-  methodType: FetchMethodType, idToken: string,
-  blob: Blob | null, selectedUser: string, selectedTechnique: string,
-  timestamp: string, mediaType: string, extension: string
-) => {
+  const time = [
+    String(today.getHours()).padStart(2, '0'),
+    String(today.getMinutes()).padStart(2, '0'),
+    String(today.getSeconds()).padStart(2, '0')
+  ].join('');
+
+  return `${ymd}T${time}`;
+};
+
+export const fetchPresignedUrl = async (
+  methodType: FetchMethodType, extension: string, idToken: string,
+  selectedUserNum: string | null, selectedTechnique: string,
+  timestamp: string, mediaType: string,
+): Promise<string | null> => {
   try {
-    console.log("get presigned url: " + timestamp);
-    // Presigned url 取得
+    console.log("Fetching presigned URL for", methodType, extension, timestamp);
     const res = await fetch(`${getPresignedUrl}?requestType=${methodType}`, {
       method: 'POST',
       headers: {
@@ -28,35 +34,67 @@ export const fetchBlob = async (
         'Authorization': idToken
       },
       body: JSON.stringify({
-        sub: selectedUser,
+        userNum: selectedUserNum,
         techniqueId: selectedTechnique,
         timestamp: timestamp,
-        extention: extension,
+        extension: extension,
         mediaType: mediaType,
       }),
     });
+
+    if (!res.ok) throw new Error(`Failed to get presigned URL: ${res.statusText}`);
+
     const { presigned_url } = await res.json();
-
-    console.log("fetch by presigned url: " + presigned_url);
-    const fetchResponse = await fetch(presigned_url, {
-      method: methodType,
-      headers: {'Content-Type': blob? blob.type : 'application/json'},
-      body: blob,
-    })
-
-    console.log("fetch object done: " + timestamp);
-    return fetchResponse;
-  } catch(error) {
-    console.error(error);
+    return presigned_url;
+  } catch (error) {
+    console.error("Error fetching presigned URL:", error);
+    return null;
   }
-}
+};
 
-export const fetchObjectKeys = async (userSub: string) => {
+
+// "get", "put" メソッドで使用
+export const fetchFileFromS3 = async (presignedUrl: string): Promise<Blob | null> => {
+  try {
+    console.log("Fetching file from S3:", presignedUrl);
+    const fetchResponse = await fetch(presignedUrl, {
+      method: "GET",
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    if (!fetchResponse.ok) throw new Error(`Failed to fetch file: ${fetchResponse.statusText}`);
+
+    return await fetchResponse.blob();
+  } catch (error) {
+    console.error("Error fetching file from S3:", error);
+    return null;
+  }
+};
+
+export const uploadFileToS3 = async (presignedUrl: string, file: Blob): Promise<Response | null> => {
+  try {
+    console.log("Uploading file to S3:", presignedUrl);
+    const fetchResponse = await fetch(presignedUrl, {
+      method: "PUT",
+      headers: { 'Content-Type': file.type },
+      body: file,
+    });
+
+    if (!fetchResponse.ok) throw new Error(`Failed to upload file: ${fetchResponse.statusText}`);
+
+    return fetchResponse;
+  } catch (error) {
+    console.error("Error uploading file to S3:", error);
+    return null;
+  }
+};
+
+export const fetchObjectKeys = async (extension: string, techniqueId?: string) => {
   try {
     const session = await fetchAuthSession();
     const idToken = session.tokens?.idToken?.toString();
 
-    console.log("### start: fetch object keys ### ");
+    console.log("### start: fetch object keys ### ", extension, techniqueId);
     const res = await fetch(`${getPresignedUrl}?requestType=get-keys`, {
       method: 'POST',
       headers: {
@@ -64,9 +102,12 @@ export const fetchObjectKeys = async (userSub: string) => {
         'Authorization': idToken!
       },
       body: JSON.stringify({
-        sub: userSub
+        techniqueId: techniqueId,
+        extension: extension
       }),
     });
+
+    if (!res.ok) throw new Error("Failed to fetch object keys");
     const { keys } = await res.json();
     console.log("### done: fetch object keys ### ");
     return keys as Promise<string[]>

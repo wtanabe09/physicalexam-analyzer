@@ -1,11 +1,6 @@
-import { fetchAuthSession, fetchUserAttributes } from "aws-amplify/auth";
+import { fetchAuthSession } from "aws-amplify/auth";
 
 const lambdaEndpoint = process.env.REACT_APP_API_GET_PRESIGNED_URL;
-
-export const fetchUserAttr = async () => {
-  const userAttr = await fetchUserAttributes();
-  return userAttr
-}
 
 export const checkAndRegisterIdentityId = async () => {
   const currentUser = await fetchAuthSession();
