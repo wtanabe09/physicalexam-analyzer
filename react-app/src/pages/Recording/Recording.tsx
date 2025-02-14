@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { AppShell, ComboboxItem, Container } from '@mantine/core';
+import { AppShell, ComboboxItem, Container, Grid } from '@mantine/core';
 import { FRAMERATE, FRAMESIZE } from '../../exports/consts';
 import { useRecorder } from '../../utils/video/useRecorder';
 import { useMediaStream } from '../../utils/video/useMediaStream';
@@ -9,7 +9,7 @@ import { useMediaQuery } from '@mantine/hooks';
 import { LandmarkChunk } from '../../exports/types';
 import { useNavigate } from 'react-router-dom';
 import { createRowData } from '../../utils/aws/useCsvChunk';
-import { fetchBlob, getTimestamp } from '../../utils/aws/s3Util';
+import { fetchPresignedUrl, getTimestamp, uploadFileToS3 } from '../../utils/aws/s3Util';
 import { fetchAuthSession } from 'aws-amplify/auth';
 
 export const Recording = () => {
@@ -48,11 +48,26 @@ export const Recording = () => {
 
             const session = await fetchAuthSession();
             const idToken = session.tokens?.idToken?.toString();
+            const userNum = selectedUser.value
+            const techniqueId = selectedTechnique.value
             
-            await fetchBlob('PUT', idToken!, recordedBlob, selectedUser.value, selectedTechnique.value, timestamp,  "all", "mp4")
-            await fetchBlob('PUT', idToken!, poseBlob, selectedUser.value, selectedTechnique.value, timestamp, "pose", "csv")
-            await fetchBlob('PUT', idToken!, handTopBlob, selectedUser.value, selectedTechnique.value, timestamp, "hand", "csv")
-            await fetchBlob('PUT', idToken!, handFrontBlob, selectedUser.value, selectedTechnique.value, timestamp, "hand-front", "csv")
+            // 1. presigned URLs を取得
+            const presignedUrls = await Promise.all([
+              fetchPresignedUrl('PUT', 'mp4', idToken!, userNum, techniqueId, timestamp, 'all'),
+              fetchPresignedUrl('PUT', 'csv', idToken!, userNum, techniqueId, timestamp, 'pose'),
+              fetchPresignedUrl('PUT', 'csv', idToken!, userNum, techniqueId, timestamp, 'hand'),
+              fetchPresignedUrl('PUT', 'csv', idToken!, userNum, techniqueId, timestamp, 'hand-front'),
+            ]);
+
+            if (!presignedUrls.every(url => url)) throw new Error("Failed to fetch presigned URLs");
+
+            // 2. ファイルを並列でアップロード
+            await Promise.all([
+              uploadFileToS3(presignedUrls[0]!, recordedBlob),
+              uploadFileToS3(presignedUrls[1]!, poseBlob),
+              uploadFileToS3(presignedUrls[2]!, handTopBlob),
+              uploadFileToS3(presignedUrls[3]!, handFrontBlob),
+            ]);
             console.log("### upload done ###: " + timestamp);
           } catch (error) {
             console.error('Error upload session data: ', error);
@@ -80,30 +95,39 @@ export const Recording = () => {
 
   return (
     <>
-      <AppShell.Navbar>
-        <ControlPanel
-          selectedUser={selectedUser}
-          setUserValue={setUserValue}
-          selectedTechnique={selectedTechnique}
-          setTechniqueValue={setTechniqueValue}
-          isRecording={isRecording}
-          startRecording={startRecording}
-          stopRecording={stopRecording}
-          isDisplayPosture={isDisplayRealtimePosture}
-          setIsDisplayPosture={setIsDisplayRealtimePosture}
-          isLocalSave={isLocalSave}
-          setIsLocalSave={setIsLocalSave}
-        />
-      </AppShell.Navbar>
+      {/* <AppShell.Navbar>
+        
+      </AppShell.Navbar> */}
       <AppShell.Main>
-        <RealtimeVideoPanel
-          stream={stream}
-          isRecording={isRecording}
-          isDisplayPosture={isDisplayRealtimePosture}
-          setPoseLandmarkChunk={setPoseLandmarkChunk}
-          setHandLandmarkChunk={setHandLandmarkChunk}
-          setHandLandmarkChunkForHeatmap={setHandLandmarkChunkForHeatmap}
-        />
+        <Container fluid>
+        <Grid grow>
+          <Grid.Col span={2}>
+            <ControlPanel
+              selectedUser={selectedUser}
+              setUserValue={setUserValue}
+              selectedTechnique={selectedTechnique}
+              setTechniqueValue={setTechniqueValue}
+              isRecording={isRecording}
+              startRecording={startRecording}
+              stopRecording={stopRecording}
+              isDisplayPosture={isDisplayRealtimePosture}
+              setIsDisplayPosture={setIsDisplayRealtimePosture}
+              isLocalSave={isLocalSave}
+              setIsLocalSave={setIsLocalSave}
+            />
+          </Grid.Col>
+          <Grid.Col span={10}>
+            <RealtimeVideoPanel
+              stream={stream}
+              isRecording={isRecording}
+              isDisplayPosture={isDisplayRealtimePosture}
+              setPoseLandmarkChunk={setPoseLandmarkChunk}
+              setHandLandmarkChunk={setHandLandmarkChunk}
+              setHandLandmarkChunkForHeatmap={setHandLandmarkChunkForHeatmap}
+            />
+          </Grid.Col>
+        </Grid>
+        </Container>
       </AppShell.Main>
     </>
   );

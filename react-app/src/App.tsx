@@ -45,11 +45,12 @@ const App = () => {
         {({ signOut, user }) => (
             <AppShell
               header={{ height: APPSHELL_CONFIG.HEADER_HEIGHT }}
-              navbar={{ 
-                width: APPSHELL_CONFIG.NAVBAR_WIDTH,
-                breakpoint: 'xs',
-                collapsed: {mobile: true},
-              }}
+              // navbar={{ 
+              //   width: APPSHELL_CONFIG.NAVBAR_WIDTH,
+              //   breakpoint: 'xs',
+              //   collapsed: {mobile: true},
+              // }}
+              // footer={{ height: 120}}
             >
               <AppShellHeader signOut={signOut} />
               <Routes>

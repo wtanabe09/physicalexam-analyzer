@@ -1,8 +1,8 @@
 import { AppShell, Burger, Button, Drawer, Group, Stack, Title } from "@mantine/core"
 import { useDisclosure } from "@mantine/hooks";
+import { fetchUserAttributes } from "aws-amplify/auth";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom"
-import { fetchUserAttr } from "../aws/cognitoUtil";
 
 type Props = {
   signOut: ((data?: any) => void) | undefined,
@@ -12,7 +12,7 @@ export const AppShellHeader = ({ signOut }: Props) => {
   const [opened, { toggle, close }] = useDisclosure();
   const [userName, setUserAttr] = useState<string|null>(null);
   useEffect(() => {
-    fetchUserAttr().then(res => setUserAttr(res.name!));
+    fetchUserAttributes().then(res => setUserAttr(res.name!)).catch(console.error);
   }, [])
 
   return (

@@ -4,7 +4,7 @@ import { HAND_INDEX } from "../../exports/handLandmarkIndex";
 import { Connection, LandmarkType, MyLandmarkType } from "../../exports/types";
 
 const INDEX_KNEE_LANDMARK = 27;
-const ZOOM_MARKING = HAND_INDEX.thumb.tip;
+const ZOOM_MARKING_INDEX = HAND_INDEX.thumb.tip;
 
 const isNormalizedLandmarkArray = (landmarks: MyLandmarkType): landmarks is NormalizedLandmark[][] => {
   return landmarks.length > 0 && typeof landmarks[0][0] === 'object' && 'x' in landmarks[0][0];
@@ -34,7 +34,7 @@ const getLandmarkCoordinates = (
   return [0, 0];
 };
 
-export const drawLandmarks = (
+const drawLandmarks = (
   landmarks: number[] | NormalizedLandmark[],
   canvasCtx: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number,
   color: string = 'white', arcWidth: number = 3, magnification: number = 1
@@ -52,12 +52,12 @@ export const drawLandmarks = (
     canvasCtx.beginPath();
     canvasCtx.arc(drawX, drawY, arcWidth, 0, Math.PI * 2);
     canvasCtx.fillStyle = color;
-    if (i === ZOOM_MARKING) canvasCtx.fillStyle = 'green'; // 拡大の基準点である、12番目のlandmarkを緑色にする。
+    if (i === ZOOM_MARKING_INDEX) canvasCtx.fillStyle = 'green'; // 拡大の基準点である、12番目のlandmarkを緑色にする。
     canvasCtx.fill();
   });
 }
 
-export const drawConnectors = (
+const drawConnectors = (
   landmarks: number[] | NormalizedLandmark[], connections: Connection[],
   canvasCtx: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number,
   color: string = 'white', lineWidth: number = 2, magnification: number = 1
@@ -86,6 +86,35 @@ export const drawConnectors = (
   });
 }
 
+const zoomControl = (
+  zoomLevel: number, landmarks: number[][] | NormalizedLandmark[][],
+  canvasCtx: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number
+) => {
+  if (zoomLevel !== 1 && landmarks) {
+    // 画面上のより上に写っている方（y座標がより小さい方の手）を対象とする
+    let targetIndex = 0;
+    if (landmarks.length > 1 && isNormalizedLandmarkArray(landmarks)) {
+      if (landmarks[0][HAND_INDEX.pinky.tip].y > landmarks[1][HAND_INDEX.pinky.tip].y) {
+        targetIndex = 1;
+      }
+    } else if (isNumberArray(landmarks)) {
+      if (landmarks.length > 1 && landmarks[0][HAND_INDEX.pinky.tip*2+1] > landmarks[1][HAND_INDEX.pinky.tip*2+1]) {
+        targetIndex = 1;
+      }
+    }
+
+    const [middleX, middleY] = getLandmarkCoordinates(landmarks[targetIndex], landmarks[targetIndex][ZOOM_MARKING_INDEX], ZOOM_MARKING_INDEX);
+    if (0 < middleX && middleX < 1 && 0 < middleY && middleY < 1) {
+      const x = middleX * canvasWidth;
+      const y = middleY * canvasHeight;
+      console.log(x, y);
+      canvasCtx.translate(x, y);
+      canvasCtx.scale(zoomLevel, zoomLevel);
+      canvasCtx.translate(-x, -y);
+    }
+  }
+}
+
 // 顔の円などを書き加えて描画する
 export const drawLandmarksByDetected = (
   landmarks: number[][] | NormalizedLandmark[][], landmarkType: LandmarkType, 
@@ -101,44 +130,30 @@ export const drawLandmarksByDetected = (
     canvasCtx.save();
     canvasCtx.clearRect(0, 0, canvasWidth, canvasHeight);
 
-    if (zoomLevel && zoomLevel !== 1 && landmarks) {
-      let targetIndex = 0;
-      if (landmarks.length > 1 && isNormalizedLandmarkArray(landmarks)) {
-        if (landmarks[0][HAND_INDEX.pinky.tip].y > landmarks[1][HAND_INDEX.pinky.tip].y) {
-          targetIndex = 1;
-        }
-      } else if (isNumberArray(landmarks)) {
-        if (landmarks.length > 1 && landmarks[0][HAND_INDEX.pinky.tip * 2 + 1] > landmarks[1][HAND_INDEX.pinky.tip * 2 + 1]) {
-          targetIndex = 1;
-        }
-      }
-      const [middleX, middleY] = getLandmarkCoordinates(landmarks[targetIndex], landmarks[targetIndex][ZOOM_MARKING], ZOOM_MARKING);
-      canvasCtx.translate(middleX * canvasWidth , middleY * canvasHeight);
-      canvasCtx.scale(zoomLevel, zoomLevel);
-      canvasCtx.translate(-middleX * canvasWidth, -middleY * canvasHeight);
+    if (zoomLevel !== 1) {
+      zoomControl(zoomLevel, landmarks, canvasCtx, canvasWidth, canvasHeight);
     }
 
     canvasCtx.drawImage(sourceCanvas, 0, 0, canvasWidth, canvasHeight);
 
     const connections = landmarkType === 'pose' ? POSE_CONNECTIONS : HAND_CONNECTIONS;
     if (isDiaplayPosture) {
-      for(let i = 0; i < landmarks.length; i++) { // フレーム分
-        const colorString = i === 0 ? 'red' : 'blue'; // 一人目に認識した人の色を赤，二人目を青とする
+      landmarks.forEach((landmark, i) => {
+        const colorString = i === 0 ? 'red' : 'blue';
         drawConnectors(
-          landmarks[i], connections,
+          landmark, connections,
           canvasCtx, canvasWidth, canvasHeight, colorString
         );
         drawLandmarks(
-          landmarks[i],
+          landmark,
           canvasCtx, canvasWidth, canvasHeight, colorString, arcWidth
         );
-      }
+      });
     }
 
     canvasCtx.restore();
   }
 }
-
 
 // const drawFaceArc = (poseLandmarks: NormalizedLandmark[], canvasCtx: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number) => {
 //   let arcWidth = 0

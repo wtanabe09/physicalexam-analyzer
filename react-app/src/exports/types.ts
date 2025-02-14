@@ -8,7 +8,9 @@ export type VideoSource = Blob | MediaStream;
 
 export type LandmarkArray = [number[], number[]];
    
-export type FormattedCsvType = [number, LandmarkArray][];
+export type FormattedCsv = [Timestamp, LandmarkArray][];
+
+export type LandmarkChunk = [[Timestamp, NormalizedLandmark[][]]];
 
 export type MyLandmarkType = NormalizedLandmark[][] | number[][];
 
@@ -25,8 +27,6 @@ export type Connection = {
 
 export type Timestamp = number;
 
-export type LandmarkChunk = [[Timestamp, NormalizedLandmark[][]]];
-
 export type ClipRegion = {
   x: number;
   y: number;
@@ -36,6 +36,6 @@ export type ClipRegion = {
 
 export type Landmarker = PoseLandmarker | HandLandmarker;
 
-export type LandmarkType = "pose" | "hand" | "hand_patient_camera";
+export type LandmarkType = "pose" | "hand" | "hand-front";
 
 export type FetchMethodType = "GET" | "PUT"

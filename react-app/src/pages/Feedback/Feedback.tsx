@@ -1,21 +1,22 @@
-import { useState } from "react";
-import { AppShell, ComboboxItem } from "@mantine/core";
-import { ControlPanel } from "./ControlPanel";
+// import { useState } from "react";
+// import { ComboboxItem } from "@mantine/core";
+import { AppShell } from "@mantine/core";
+// import { ControlPanel } from "./ControlPanel";
 import { ItemsPanel } from "./ItemsPanel";
 
 export const Feedback = () => {
-  const [selectedDate, setDateValue] = useState<ComboboxItem|null>(null);
-  const [selectedUser, setUserValue] = useState<ComboboxItem|null>(null);
+  // const [selectedDate, setDateValue] = useState<ComboboxItem|null>(null);
+  // const [selectedUser, setUserValue] = useState<ComboboxItem|null>(null);
 
   return(
     <>
       <AppShell.Navbar>
-        <ControlPanel
+        {/* <ControlPanel
           selectedDate={selectedDate}
           setDateValue={setDateValue}
           selectedUser={selectedUser}
           setUserValue={setUserValue}
-        />
+        /> */}
       </AppShell.Navbar>
       <AppShell.Main>
         <ItemsPanel/>
