@@ -9,7 +9,7 @@ import { useCsvChunk } from "../../utils/aws/useCsvChunk";
 import { getSmalestFeature } from "../../utils/feature/calcFeature";
 
 export const ComparisonPanel = ({
-  videoRef, poseLandmarks, canvasWidth, canvasHeight
+  videoEle, poseLandmarks, canvasWidth, canvasHeight
 }: VideoPanelProps) => {
   const params = useParams();
   const techniqueId = params.id?.split("-")[0];
@@ -104,7 +104,7 @@ export const ComparisonPanel = ({
       <Group>
         <div>
           <ComparisonVideo
-            originVideoRef={videoRef}
+            originVideoEle={videoEle}
             landmarkChunkOriginal={poseLandmarks}
             landmarkChunkTarget={landmarkChunk!}
             canvasWidth={canvasWidth}
@@ -126,7 +126,8 @@ export const ComparisonPanel = ({
             </Box>
           )}
         </div>
-        <div>
+        <Box>
+          <Title order={5}>他ユーザーの骨格座標</Title>
           {!comparisonKeys ? (
             <Text>データがロードされていません</Text>
           ) : downloadError ? (
@@ -134,7 +135,7 @@ export const ComparisonPanel = ({
           ) : (
             comparisonItems
           )}
-        </div>
+        </Box>
       </Group>
     </div>
   )

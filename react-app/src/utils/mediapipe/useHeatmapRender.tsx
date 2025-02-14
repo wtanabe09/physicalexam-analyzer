@@ -3,16 +3,16 @@ import { drawHeatmap } from "../graph/drawHeatmap";
 import { drawImage } from "./drawImage";
 
 interface Props {
-  originVideoRef: React.RefObject<HTMLVideoElement>,
+  originVideoEle: HTMLVideoElement,
   sourceCanvasRef: React.RefObject<HTMLCanvasElement>,
   heatmapCanvasRef: React.RefObject<HTMLCanvasElement>,
   heatmapArray: number[][],
   heatmapSize?: number,
 }
-export const useHeatmapRender = ({ originVideoRef, sourceCanvasRef, heatmapCanvasRef, heatmapArray }: Props) => {
+export const useHeatmapRender = ({ originVideoEle, sourceCanvasRef, heatmapCanvasRef, heatmapArray }: Props) => {
     const animationFrameIdRef = useRef<number | null>(null);
 
-    const originVideo = originVideoRef.current;
+    const originVideo = originVideoEle;
 
     const renderFrame = useCallback((heatmap: number[][]) => {
       const sourceCanvas = sourceCanvasRef.current;
@@ -46,6 +46,6 @@ export const useHeatmapRender = ({ originVideoRef, sourceCanvasRef, heatmapCanva
           cancelAnimationFrame(animationFrameIdRef.current);
         }
       }
-    }, [originVideoRef, heatmapArray, renderLoop]);
+    }, [originVideoEle, heatmapArray, renderLoop, originVideo]);
   
   }

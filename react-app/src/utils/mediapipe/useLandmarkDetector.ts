@@ -19,7 +19,7 @@ const initializeLandmarker = async (landmarkerType: LandmarkType): Promise<Landm
 
 export const useLandmarkDetector = (
   landmarkType: LandmarkType | null,
-  videoRef: RefObject<HTMLVideoElement>,
+  videoEle: HTMLVideoElement,
   canvasRef: RefObject<HTMLCanvasElement>,
   clipRegion: ClipRegion
 ) => {
@@ -50,14 +50,14 @@ export const useLandmarkDetector = (
   
   
   const detectionLoop = useCallback(() => {
-    if (!videoRef.current || !canvasRef.current) return;
+    if (!videoEle || !canvasRef.current) return;
     try {
-      landmarksRef.current = detectLandmarks(videoRef.current, canvasRef.current);
+      landmarksRef.current = detectLandmarks(videoEle, canvasRef.current);
     } catch (error) {
       console.error("ランドマーク検出ループでエラーが発生しました:", error);
     }
     renderLoopIdRef.current = requestAnimationFrame(detectionLoop);
-  }, [videoRef, canvasRef, detectLandmarks]);
+  }, [videoEle, canvasRef, detectLandmarks]);
 
   useEffect(() => {
     if (landmarkType) {
@@ -73,7 +73,7 @@ export const useLandmarkDetector = (
   useEffect(() => {
 
     // 動画が読み込まれたらdetectionLoopを呼び出す readyState 4は動画が読み込まれたことを意味する
-    if (landmarker && videoRef.current && videoRef.current.readyState === 4 && !renderLoopIdRef.current) {
+    if (landmarker && videoEle && videoEle.readyState === 4 && !renderLoopIdRef.current) {
       renderLoopIdRef.current = requestAnimationFrame(detectionLoop);
     }
 
@@ -89,7 +89,7 @@ export const useLandmarkDetector = (
       if (intervalId) clearInterval(intervalId);
       if (landmarker) landmarker?.close();
     };
-  }, [videoRef, detectionLoop, landmarker]);
+  }, [videoEle, detectionLoop, landmarker]);
 
   return { landmarks };
 };

@@ -50,7 +50,7 @@ const App = () => {
               //   breakpoint: 'xs',
               //   collapsed: {mobile: true},
               // }}
-              footer={{ height: 150}}
+              // footer={{ height: 120}}
             >
               <AppShellHeader signOut={signOut} />
               <Routes>

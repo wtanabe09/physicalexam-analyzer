@@ -2,14 +2,14 @@ import { useEffect } from "react";
 import { ClipRegion } from "../../exports/types";
 
 interface Props {
-  videoRef: React.RefObject<HTMLVideoElement>,
+  videoEle: HTMLVideoElement,
   clippedCanvasRef: React.RefObject<HTMLCanvasElement>,
   clipRegion: ClipRegion,
 }
 
-export const useClippedVideo = ({videoRef, clippedCanvasRef, clipRegion}: Props) => {
+export const useClippedVideo = ({videoEle, clippedCanvasRef, clipRegion}: Props) => {
   useEffect(() => {
-    const video = videoRef.current;
+    const video = videoEle;
     const clippedCanvas = clippedCanvasRef.current;
     if (video && clippedCanvas && clipRegion) {
       // video.currentTime = 1;
@@ -35,5 +35,5 @@ export const useClippedVideo = ({videoRef, clippedCanvasRef, clipRegion}: Props)
         if (ctx) ctx.clearRect(0, 0, clippedCanvas.width, clippedCanvas.height);
       }
     }
-  }, [clipRegion, clippedCanvasRef, videoRef]);
+  }, [clipRegion, clippedCanvasRef, videoEle]);
 }

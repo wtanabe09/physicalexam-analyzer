@@ -89,6 +89,9 @@ export const uploadFileToS3 = async (presignedUrl: string, file: Blob): Promise<
   }
 };
 
+
+
+
 export const fetchObjectKeys = async (extension: string, techniqueId?: string) => {
   try {
     const session = await fetchAuthSession();

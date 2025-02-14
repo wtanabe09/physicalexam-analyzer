@@ -17,12 +17,11 @@ export const useS3Downloader = (selectedVideoKey: string | null): VideoSelectBox
 
   const isMountedRef = useRef(true);
 
-  
   const fetchDatas = useCallback(async (isMounted: boolean) => {
     if (!selectedVideoKey) return;
 
     const [techniqueId, mp4FileName] = selectedVideoKey.split("-");
-    const timestamp = mp4FileName.split(".")[0]
+    const timestamp = mp4FileName.slice(0, -4);
     try {
       const session = await fetchAuthSession();
       const idToken = session.tokens?.idToken?.toString();
@@ -30,7 +29,7 @@ export const useS3Downloader = (selectedVideoKey: string | null): VideoSelectBox
 
       // 1. プリサインドURLを取得
       const presignedUrls = await Promise.allSettled([
-        fetchPresignedUrl("GET", "mp4", idToken, null, techniqueId, timestamp, "all"),
+        // fetchPresignedUrl("GET", "mp4", idToken, null, techniqueId, timestamp, "all"),
         fetchPresignedUrl("GET", "csv", idToken, null, techniqueId, timestamp, "pose"),
         fetchPresignedUrl("GET", "csv", idToken, null, techniqueId, timestamp, "hand"),
         fetchPresignedUrl("GET", "csv", idToken, null, techniqueId, timestamp, "hand-front"),
@@ -38,19 +37,19 @@ export const useS3Downloader = (selectedVideoKey: string | null): VideoSelectBox
 
       // 2. 成功したURLだけを使ってダウンロード
       const results = await Promise.allSettled([
+        // presignedUrls[0].status === "fulfilled" && presignedUrls[0].value ? fetchFileFromS3(presignedUrls[0].value) : null,
         presignedUrls[0].status === "fulfilled" && presignedUrls[0].value ? fetchFileFromS3(presignedUrls[0].value) : null,
         presignedUrls[1].status === "fulfilled" && presignedUrls[1].value ? fetchFileFromS3(presignedUrls[1].value) : null,
         presignedUrls[2].status === "fulfilled" && presignedUrls[2].value ? fetchFileFromS3(presignedUrls[2].value) : null,
-        presignedUrls[3].status === "fulfilled" && presignedUrls[3].value ? fetchFileFromS3(presignedUrls[3].value) : null,
       ]);
 
       if (!isMounted) return; // アンマウントチェック
 
       // 3. 成功したデータのみセット
-      if (results[0].status === "fulfilled" && results[0].value) setVideoBlob(results[0].value);
-      if (results[1].status === "fulfilled" && results[1].value) setCsvBlobPose(results[1].value);
-      if (results[2].status === "fulfilled" && results[2].value) setCsvBlobHand(results[2].value);
-      if (results[3].status === "fulfilled" && results[3].value) setCsvBlobHandFrontCam(results[3].value);
+      // if (results[0].status === "fulfilled" && results[0].value) setVideoBlob(results[0].value);
+      if (results[0].status === "fulfilled" && results[0].value) setCsvBlobPose(results[0].value);
+      if (results[1].status === "fulfilled" && results[1].value) setCsvBlobHand(results[1].value);
+      if (results[2].status === "fulfilled" && results[2].value) setCsvBlobHandFrontCam(results[2].value);
 
     } catch (err) {
       console.error('Error fetching video:', err);

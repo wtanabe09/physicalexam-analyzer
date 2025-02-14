@@ -1,9 +1,8 @@
 import { Box, Group, Title } from "@mantine/core";
 import { CameraRegions, FRAMESIZE } from "../../exports/consts";
 import { LandmarkChunk } from "../../exports/types";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { LandmarkVideoRealtime } from "../../utils/mediapipe/LandmarkVideoRealtime";
-import { useVideoSource } from "../../utils/video/useVideoSource";
 
 const canvasSize = {
   width: FRAMESIZE.CANVAS.WIDTH,
@@ -24,7 +23,32 @@ export const RealtimeVideoPanel: React.FC<VideoPanelProps> = ({
   setPoseLandmarkChunk, setHandLandmarkChunk, setHandLandmarkChunkForHeatmap
 }) => {
   const realtimeVideoRef = useRef<HTMLVideoElement>(null);
-  useVideoSource(realtimeVideoRef, stream);
+  const video = realtimeVideoRef.current;
+
+  useEffect(() => {
+    if (!video) return;
+    try {
+      if (stream instanceof MediaStream) {
+        video.srcObject = stream;
+      } else {
+        console.error("Invalid video source type:", stream);
+      }
+
+      video.autoplay = true;
+      video.playsInline = true;
+      video.muted = true;
+      video.play().catch(console.error);
+
+    } catch (error) {
+      console.error("Error playing video:", error);
+    }
+    
+    return () => {
+      if (video) {
+        video.pause();
+      }
+    }
+  }, [stream, video]);
   
   return (
     <Box>
@@ -39,7 +63,7 @@ export const RealtimeVideoPanel: React.FC<VideoPanelProps> = ({
           <Title order={3} className="font-semibold">(1) 横カメラ</Title>
           <LandmarkVideoRealtime
             landmarkType='pose'
-            videoRef={realtimeVideoRef}
+            videoEle={realtimeVideoRef.current!}
             width={canvasSize.width}
             height={canvasSize.height}
             isRecording={isRecording}
@@ -52,7 +76,7 @@ export const RealtimeVideoPanel: React.FC<VideoPanelProps> = ({
           <Title order={3} className="font-semibold">(2) 上カメラ</Title>
           <LandmarkVideoRealtime
             landmarkType='hand'
-            videoRef={realtimeVideoRef}
+            videoEle={realtimeVideoRef.current!}
             width={canvasSize.width}
             height={canvasSize.height}
             isRecording={isRecording}
@@ -65,7 +89,7 @@ export const RealtimeVideoPanel: React.FC<VideoPanelProps> = ({
           <Title order={3} className="font-semibold">(3) 患者カメラ</Title>
           <LandmarkVideoRealtime
             landmarkType='hand-front'
-            videoRef={realtimeVideoRef}
+            videoEle={realtimeVideoRef.current!}
             width={canvasSize.width}
             height={canvasSize.height}
             isRecording={isRecording}

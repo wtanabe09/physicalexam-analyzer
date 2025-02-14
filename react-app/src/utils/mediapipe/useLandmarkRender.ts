@@ -5,7 +5,7 @@ import { drawLandmarksByDetected } from "./drawLandmarksByDetected";
 import { drawImage } from "./drawImage";
 
 interface Props {
-  videoRef: React.RefObject<HTMLVideoElement>;
+  videoEle: HTMLVideoElement;
   sourceCanvasRef: React.RefObject<HTMLCanvasElement>;
   outputCanvasRef: React.RefObject<HTMLCanvasElement>;
   landmarkChunk: [number, MyLandmarkType][];
@@ -27,7 +27,7 @@ const isNumberArray = (landmarks: MyLandmarkType): landmarks is number[][] => {
 };
 
 export const useLandmarkRender = ({
-  videoRef, sourceCanvasRef, outputCanvasRef,
+  videoEle, sourceCanvasRef, outputCanvasRef,
   landmarkChunk, landmarkType, isDisplayPosture, zoomLevel
 }: Props) => {
   const animationFrameIdRef = useRef<number | null>(null);
@@ -54,7 +54,7 @@ export const useLandmarkRender = ({
 
   
   const renderLoop = useCallback(() => {
-    const video = videoRef.current;
+    const video = videoEle;
     if (!video || !landmarkChunk) return;
 
     const currentTime = video.currentTime * 1000;
@@ -70,11 +70,11 @@ export const useLandmarkRender = ({
     }
 
     animationFrameIdRef.current = requestAnimationFrame(renderLoop);
-  }, [landmarkChunk, renderFrame, videoRef]);
+  }, [landmarkChunk, renderFrame, videoEle]);
 
 
   useEffect(() => {
-    const video = videoRef.current;
+    const video = videoEle;
     const canvas = outputCanvasRef.current;
     
     if (video) {
@@ -89,6 +89,6 @@ export const useLandmarkRender = ({
         canvas.getContext('2d')?.clearRect(0, 0, canvas.width, canvas.height);
       }
     };
-  }, [videoRef, landmarkChunk, renderLoop, outputCanvasRef, isDisplayPosture]);
+  }, [videoEle, landmarkChunk, renderLoop, outputCanvasRef, isDisplayPosture]);
 
 };

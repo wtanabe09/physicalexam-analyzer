@@ -7,7 +7,7 @@ import { calcSlide } from "../feature/calcAdjust";
 import { POSE_INDEX } from "../../exports/poseLandmarkIndex";
 
 interface Props {
-  originVideoRef: React.RefObject<HTMLVideoElement>;
+  originVideoEle: HTMLVideoElement;
   sourceCanvasRef: React.RefObject<HTMLCanvasElement>;
   outputCanvasRef: React.RefObject<HTMLCanvasElement>;
   landmarkChunkOriginal: LandmarkChunk;
@@ -30,7 +30,7 @@ const isNumberArray = (landmarks: MyLandmarkType): landmarks is number[][] => {
 };
 
 export const useComparisonLandmarkRender = ({
-  originVideoRef, sourceCanvasRef, outputCanvasRef,
+  originVideoEle, sourceCanvasRef, outputCanvasRef,
   landmarkChunkOriginal, landmarkChunkTarget, landmarkType, isDisplayPosture, comparisonRow
 }: Props) => {
   const animationFrameIdRef = useRef<number | null>(null);
@@ -70,7 +70,7 @@ export const useComparisonLandmarkRender = ({
 
   
   const renderLoop = useCallback(() => {
-    const video = originVideoRef.current;
+    const video = originVideoEle;
     if (!video || !landmarkChunkTarget || !landmarkChunkOriginal) return;
 
     const currentTime = video.currentTime * 1000;
@@ -88,11 +88,11 @@ export const useComparisonLandmarkRender = ({
     }
 
     animationFrameIdRef.current = requestAnimationFrame(renderLoop);
-  }, [originVideoRef, landmarkChunkTarget, landmarkChunkOriginal, comparisonRow, renderFrame]);
+  }, [originVideoEle, landmarkChunkTarget, landmarkChunkOriginal, comparisonRow, renderFrame]);
 
 
   useEffect(() => {
-    const video = originVideoRef.current;
+    const video = originVideoEle;
     const canvas = outputCanvasRef.current;
     
     if (video) {
@@ -107,6 +107,6 @@ export const useComparisonLandmarkRender = ({
         canvas.getContext('2d')?.clearRect(0, 0, canvas.width, canvas.height);
       }
     };
-  }, [originVideoRef, landmarkChunkOriginal, renderLoop, outputCanvasRef, isDisplayPosture]);
+  }, [originVideoEle, landmarkChunkOriginal, renderLoop, outputCanvasRef, isDisplayPosture]);
 
 };

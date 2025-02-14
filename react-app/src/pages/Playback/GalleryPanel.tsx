@@ -4,7 +4,7 @@ import { LandmarkChunk } from "../../exports/types"
 import { Box, Group } from "@mantine/core"
 
 interface Props {
-  videoRef: React.RefObject<HTMLVideoElement>;
+  videoEle: HTMLVideoElement;
   poseLandmarks: LandmarkChunk,
   handLandmarksTopCamera: LandmarkChunk,
   handLandmarksFrontCamera: LandmarkChunk,
@@ -13,8 +13,8 @@ interface Props {
   canvasHeight: number,
 }
 
-export const VideoPanel: React.FC<Props> = ({
-  videoRef,
+export const GalleryPanel: React.FC<Props> = ({
+  videoEle,
   poseLandmarks, handLandmarksTopCamera, handLandmarksFrontCamera,
   isDisplayPosture, canvasWidth, canvasHeight
 }) => {
@@ -24,7 +24,7 @@ export const VideoPanel: React.FC<Props> = ({
       <Box>
         {/* <Title order={3} mb={2}>(1) 横カメラ</Title> */}
         <LandmarkVideo
-          videoRef={videoRef}
+          videoEle={videoEle}
           landmarkChunk={poseLandmarks}
           landmarkType="pose"
           width={canvasWidth} 
@@ -35,9 +35,8 @@ export const VideoPanel: React.FC<Props> = ({
         />
       </Box>
       <Box>
-        {/* <Title order={3} mb={2}>(2) 正面カメラ</Title> */}
         <LandmarkVideo
-          videoRef={videoRef}
+          videoEle={videoEle}
           landmarkChunk={handLandmarksFrontCamera}
           landmarkType="hand-front"
           width={canvasWidth} 
@@ -48,9 +47,8 @@ export const VideoPanel: React.FC<Props> = ({
         />
       </Box>
       <Box>
-      {/* <Title order={3} mb={2}>(3) 上カメラ</Title> */}
         <LandmarkVideo
-          videoRef={videoRef}
+          videoEle={videoEle}
           landmarkChunk={handLandmarksTopCamera}
           landmarkType="hand"
           width={canvasWidth} 

@@ -6,7 +6,7 @@ import { CameraRegions } from "../../exports/consts";
 import { useComparisonLandmarkRender } from "../mediapipe/useComparisonLandmarkRender";
 
 interface Props {
-  originVideoRef: React.RefObject<HTMLVideoElement>,
+  originVideoEle: HTMLVideoElement,
   landmarkChunkOriginal: LandmarkChunk,
   landmarkChunkTarget: LandmarkChunk|FormattedCsv,
   canvasWidth: number,
@@ -17,7 +17,7 @@ interface Props {
 }
 
 export const ComparisonVideo = ({
-  originVideoRef,
+  originVideoEle,
   landmarkChunkOriginal, landmarkChunkTarget,
   canvasWidth, canvasHeight, isDisplayPosture, landmarkType, comparisonRow
 }: Props) => {
@@ -25,7 +25,7 @@ export const ComparisonVideo = ({
   const outputCanvasRef = useRef<HTMLCanvasElement|null>(null);
 
   useComparisonLandmarkRender({
-    originVideoRef, sourceCanvasRef, outputCanvasRef,
+    originVideoEle, sourceCanvasRef, outputCanvasRef,
     landmarkChunkOriginal, landmarkChunkTarget, landmarkType, isDisplayPosture, comparisonRow
   });
   
@@ -35,7 +35,7 @@ export const ComparisonVideo = ({
         <>
           <ClippedVideo
             ref={sourceCanvasRef}
-            videoRef={originVideoRef}
+            videoEle={originVideoEle}
             width={canvasWidth}
             height={canvasHeight}
             clipRegion={CameraRegions.Side}
@@ -50,7 +50,7 @@ export const ComparisonVideo = ({
         </>
       ) : (
         <ClippedVideo
-          videoRef={originVideoRef}
+          videoEle={originVideoEle}
           width={canvasWidth}
           height={canvasHeight}
           clipRegion={CameraRegions.Side}

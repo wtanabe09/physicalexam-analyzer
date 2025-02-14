@@ -1,19 +1,20 @@
-import { AppShell, Container, Tabs } from "@mantine/core";
-import { VideoPanel } from "./VideoPanel";
+import { Affix, AppShell, Container, Tabs } from "@mantine/core";
+import { GalleryPanel } from "./GalleryPanel";
 import { useLocation } from "react-router-dom";
 import { LandmarkChunk } from "../../exports/types";
 import { IconPhoto, Icon123 } from '@tabler/icons-react';
-import { ZoomPanel } from "./ZoomPanel";
 import { useEffect, useRef, useState } from "react";
 import { FRAMESIZE } from "../../exports/consts";
-import { VideoControls } from "./VideoControls";
-import { HeatMapPanel } from "./HeatMapPanel";
 import { useViewportSize } from "@mantine/hooks";
+import  ReactPlayer  from "react-player";
+import { VideoControls } from "./VideoControls";
+import { ZoomPanel } from "./ZoomPanel";
+import { HeatMapPanel } from "./HeatMapPanel";
 import { ComparisonPanel } from "./ComparisonPanel";
 
 export const Playback = () => {
   type LocationState = {
-    videoBlob: Blob,
+    videoUrl: string,
     poseLandmarks: LandmarkChunk,
     handLandmarksTopCamera: LandmarkChunk,
     handLandmarksFrontCamera: LandmarkChunk,
@@ -21,18 +22,16 @@ export const Playback = () => {
 
   const location = useLocation();
   const { 
-    videoBlob, poseLandmarks, handLandmarksTopCamera, handLandmarksFrontCamera
+    videoUrl, poseLandmarks, handLandmarksTopCamera, handLandmarksFrontCamera
   } = location.state as LocationState
 
-  const videoRef = useRef<HTMLVideoElement>(null);
-  // const widthRef = useRef<number>(FRAMESIZE.CANVAS.WIDTH);
-  // const heighthRef = useRef<number>(FRAMESIZE.CANVAS.HEIGHT);
-  const {width} = useViewportSize();
+  const playerRef = useRef<ReactPlayer>(null);
+  const videoEle = playerRef.current?.getInternalPlayer() as HTMLVideoElement;
 
-  const [isDisplayPosture, setIsDisplayPosture] = useState<boolean>(true);
-
+  const { width } = useViewportSize();
   const [canvasSize, setCanvasSize] = useState({ width: FRAMESIZE.CANVAS.WIDTH, height: FRAMESIZE.CANVAS.HEIGHT });
 
+  const [isDisplayPosture, setIsDisplayPosture] = useState<boolean>(true);
 
   useEffect(() => {
     if (width) {
@@ -45,22 +44,25 @@ export const Playback = () => {
     }
   }, [width]);
 
-  // useEffect(() => {
-  //   const innerWidth = window.innerWidth
-  //   const mag = (innerWidth / 2) / FRAMESIZE.CANVAS.WIDTH;
-  //   const offset = {width: (0.05 * FRAMESIZE.CANVAS.WIDTH), height: (0.05 * FRAMESIZE.CANVAS.HEIGHT)};
-  //   widthRef.current = mag < 1 ? FRAMESIZE.CANVAS.WIDTH * mag - offset.width : FRAMESIZE.CANVAS.WIDTH;
-  //   heighthRef.current =  mag < 1 ? FRAMESIZE.CANVAS.HEIGHT * mag - offset.height : FRAMESIZE.CANVAS.HEIGHT;
-  // }, []);
+  const commonParams = {
+    videoEle,
+    poseLandmarks,
+    handLandmarksTopCamera,
+    handLandmarksFrontCamera,
+    isDisplayPosture,
+    canvasWidth: canvasSize.width,
+    canvasHeight: canvasSize.height
+  }
 
   return(
     <AppShell.Main>
-      <video
+      
+      {/* <video
         id="input_stream"
         ref={videoRef}
         width={FRAMESIZE.CANVAS.WIDTH} height={FRAMESIZE.CANVAS.HEIGHT}
         style={{ display: "none" }}
-      />
+      /> */}
       <Container fluid p={15}>
         <Tabs radius="xs"defaultValue="gallery" mb={20}>
           <Tabs.List>
@@ -70,58 +72,26 @@ export const Playback = () => {
             <Tabs.Tab value="comparison" leftSection={<Icon123 size={12} />}>比較</Tabs.Tab>
           </Tabs.List>
           <Tabs.Panel value="gallery">
-            <VideoPanel
-              videoRef={videoRef}
-              poseLandmarks={poseLandmarks}
-              handLandmarksTopCamera={handLandmarksTopCamera}
-              handLandmarksFrontCamera={handLandmarksFrontCamera}
-              isDisplayPosture={isDisplayPosture}
-              canvasWidth={canvasSize.width}
-              canvasHeight={canvasSize.height}
-            />
+            <GalleryPanel {...commonParams} />
           </Tabs.Panel>
           <Tabs.Panel value="zoom">
-            <ZoomPanel
-              videoRef={videoRef}
-              poseLandmarks={poseLandmarks}
-              handLandmarksFrontCamera={handLandmarksFrontCamera}
-              handLandmarksTopCamera={handLandmarksTopCamera}
-              isDisplayPosture={isDisplayPosture}
-              canvasWidth={canvasSize.width}
-              canvasHeight={canvasSize.height}
-            />
+            <ZoomPanel {...commonParams} />
           </Tabs.Panel>
           <Tabs.Panel value="heatmap">
-            <HeatMapPanel
-              videoRef={videoRef}
-              poseLandmarks={poseLandmarks}
-              handLandmarksFrontCamera={handLandmarksFrontCamera}
-              handLandmarksTopCamera={handLandmarksTopCamera}
-              isDisplayPosture={isDisplayPosture}
-              canvasWidth={canvasSize.width}
-              canvasHeight={canvasSize.height}
-            />
+            <HeatMapPanel {...commonParams} />
           </Tabs.Panel>
           <Tabs.Panel value="comparison">
-            <ComparisonPanel
-              videoRef={videoRef}
-              poseLandmarks={poseLandmarks}
-              handLandmarksFrontCamera={handLandmarksFrontCamera}
-              handLandmarksTopCamera={handLandmarksTopCamera}
-              isDisplayPosture={isDisplayPosture}
-              canvasWidth={canvasSize.width}
-              canvasHeight={canvasSize.height}
-            />
+            <ComparisonPanel {...commonParams} />
           </Tabs.Panel>
         </Tabs>
-        <AppShell.Footer>
+        <Affix w={"100%"} position={{bottom:5}}>
           <VideoControls
-            videoRef={videoRef}
-            videoBlob={videoBlob}
+            playerRef={playerRef}
+            videoUrl={videoUrl}
             isDisplayPosture={isDisplayPosture}
             setIsDisplayPosture={setIsDisplayPosture}
           />
-        </AppShell.Footer>
+        </Affix>
       </Container>
     </AppShell.Main>
   )
