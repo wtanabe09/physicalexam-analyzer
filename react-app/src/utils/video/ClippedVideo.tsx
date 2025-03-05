@@ -4,7 +4,7 @@ import { useClippedVideo } from "./useClippedVideo";
 
 interface Props {
   id?: string,
-  videoRef: React.RefObject<HTMLVideoElement>,
+  videoEle: HTMLVideoElement,
   width: string | number,
   height: string | number,
   clipRegion: ClipRegion,
@@ -12,11 +12,11 @@ interface Props {
 }
 
 export const ClippedVideo = forwardRef<HTMLCanvasElement, Props>(
-  ({id, videoRef, width, height, clipRegion, style}, ref) => {
+  ({id, videoEle, width, height, clipRegion, style}, ref) => {
     
   const internalRef = useRef<HTMLCanvasElement>(null);
   useImperativeHandle(ref, () => internalRef.current!, []);
-  useClippedVideo({ videoRef, clippedCanvasRef: internalRef, clipRegion });
+  useClippedVideo({ videoEle, clippedCanvasRef: internalRef, clipRegion });
 
   return (
     <canvas

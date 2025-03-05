@@ -5,16 +5,16 @@
   3. LandamrkResultの結果をCanvasに描画（drawLandmarks)
 */
 
-import { RefObject, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useLandmarkDetector } from "./useLandmarkDetector";
 import { ClipRegion, LandmarkChunk, LandmarkType } from "../../exports/types";
 import { ClippedVideo } from "../video/ClippedVideo";
-import { drawLandmarksByDetected } from "./drawLandmarks";
+import { drawLandmarksByDetected } from "./drawLandmarksByDetected";
 import { useLandmarkChunk } from "./useLnadmarkChunk";
 import { drawImage } from "./drawImage";
 
 interface Props {
-  videoRef: RefObject<HTMLVideoElement>;
+  videoEle: HTMLVideoElement;
   width: number | string;
   height: number | string;
   isRecording: boolean;
@@ -25,13 +25,13 @@ interface Props {
 }
 
 export const LandmarkVideoRealtime: React.FC<Props> = ({
-  videoRef, width, height,
+  videoEle, width, height,
   isRecording, landmarksToParent,
   clipRegion, isDisplayPosture, landmarkType
 }) => {
   const sourceCanvasRef = useRef<HTMLCanvasElement>(null);
   const outputCanvasRef = useRef<HTMLCanvasElement>(null);
-  const { landmarks } = useLandmarkDetector(landmarkType, videoRef, sourceCanvasRef, clipRegion); /* landmarks: [timestamp, result] */
+  const { landmarks } = useLandmarkDetector(landmarkType, videoEle, sourceCanvasRef, clipRegion); /* landmarks: [timestamp, result] */
 
   //chunkを作成し、親(Recording)コンポーネントに渡す。 即時フィードバックビデオでも使うから。
   useLandmarkChunk({ landmarks, landmarkType, isRecording, landmarksToParent });
@@ -39,17 +39,17 @@ export const LandmarkVideoRealtime: React.FC<Props> = ({
   useEffect(() => {
     const sourceCanvas = sourceCanvasRef.current;
     const outputCanvas = outputCanvasRef.current;
-    if (landmarks && videoRef.current && sourceCanvas && outputCanvas) {
+    if (landmarks && videoEle && sourceCanvas && outputCanvas) {
       drawImage(sourceCanvas, outputCanvas, 1, landmarks[1]);
       drawLandmarksByDetected(landmarks[1], landmarkType, sourceCanvas, outputCanvas, isDisplayPosture);
     }
-  }, [landmarks, isDisplayPosture, videoRef, outputCanvasRef, sourceCanvasRef, landmarkType]);
+  }, [landmarks, isDisplayPosture, videoEle, outputCanvasRef, sourceCanvasRef, landmarkType]);
 
   return (
     <div className="flex">
       <ClippedVideo
         ref={sourceCanvasRef}
-        videoRef={videoRef}
+        videoEle={videoEle}
         width={width}
         height={height}
         clipRegion={clipRegion}

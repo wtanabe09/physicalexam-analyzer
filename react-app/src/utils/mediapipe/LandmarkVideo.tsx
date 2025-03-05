@@ -4,7 +4,7 @@ import { ClippedVideo } from "../video/ClippedVideo";
 import { useLandmarkRender } from "./useLandmarkRender";
 
 interface Props {
-  videoRef: React.RefObject<HTMLVideoElement>;
+  videoEle: HTMLVideoElement;
   landmarkChunk: [number, MyLandmarkType][];
   landmarkType: LandmarkType;
   isDisplayPosture: boolean;
@@ -15,14 +15,14 @@ interface Props {
 }
 
 export const LandmarkVideo: React.FC<Props> = ({ 
-  videoRef, landmarkChunk, landmarkType,
+  videoEle, landmarkChunk, landmarkType,
   isDisplayPosture, width, height, clipRegion, zoomLevel
 }: Props) => {
   const outputCanvasRef = useRef<HTMLCanvasElement>(null);
   const sourceCanvasRef = useRef<HTMLCanvasElement>(null);
 
   useLandmarkRender({
-    videoRef, sourceCanvasRef, outputCanvasRef,
+    videoEle, sourceCanvasRef, outputCanvasRef,
     landmarkChunk, landmarkType, isDisplayPosture, zoomLevel
   });
 
@@ -32,7 +32,7 @@ export const LandmarkVideo: React.FC<Props> = ({
         <>
           <ClippedVideo
             ref={sourceCanvasRef}
-            videoRef={videoRef}
+            videoEle={videoEle}
             width={width}
             height={height}
             clipRegion={clipRegion}
@@ -47,7 +47,7 @@ export const LandmarkVideo: React.FC<Props> = ({
         </>
       ) : (
         <ClippedVideo
-          videoRef={videoRef}
+          videoEle={videoEle}
           width={width}
           height={height}
           clipRegion={clipRegion}

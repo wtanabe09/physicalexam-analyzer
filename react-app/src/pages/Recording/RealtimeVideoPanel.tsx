@@ -1,9 +1,8 @@
-import { Title } from "@mantine/core";
+import { Box, Group, Title } from "@mantine/core";
 import { CameraRegions, FRAMESIZE } from "../../exports/consts";
 import { LandmarkChunk } from "../../exports/types";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { LandmarkVideoRealtime } from "../../utils/mediapipe/LandmarkVideoRealtime";
-import { useVideoSource } from "../../utils/video/useVideoSource";
 
 const canvasSize = {
   width: FRAMESIZE.CANVAS.WIDTH,
@@ -24,22 +23,47 @@ export const RealtimeVideoPanel: React.FC<VideoPanelProps> = ({
   setPoseLandmarkChunk, setHandLandmarkChunk, setHandLandmarkChunkForHeatmap
 }) => {
   const realtimeVideoRef = useRef<HTMLVideoElement>(null);
-  useVideoSource(realtimeVideoRef.current, stream);
+  const video = realtimeVideoRef.current;
+
+  useEffect(() => {
+    if (!video) return;
+    try {
+      if (stream instanceof MediaStream) {
+        video.srcObject = stream;
+      } else {
+        console.error("Invalid video source type:", stream);
+      }
+
+      video.autoplay = true;
+      video.playsInline = true;
+      video.muted = true;
+      video.play().catch(console.error);
+
+    } catch (error) {
+      console.error("Error playing video:", error);
+    }
+    
+    return () => {
+      if (video) {
+        video.pause();
+      }
+    }
+  }, [stream, video]);
   
   return (
-    <div className="container p-3">
-      <div><Title order={2} className="font-semibold" mb={3}>リアルタイム</Title></div>
+    <Box>
+      <Title order={2} className="font-semibold" mb={3}>リアルタイム</Title>
       <video
         id="input_stream" ref={realtimeVideoRef}
         width={FRAMESIZE.VIDEO.WIDTH} height={FRAMESIZE.VIDEO.WIDTH}
         muted style={{ display: "none" }}
       />
-      <div className="flex flex-wrap gap-4">
-        <div>
-          <Title order={3} className="font-semibold mb-2">(1) 横カメラ</Title>
+      <Group>
+        <Box>
+          <Title order={3} className="font-semibold">(1) 横カメラ</Title>
           <LandmarkVideoRealtime
             landmarkType='pose'
-            videoRef={realtimeVideoRef}
+            videoEle={realtimeVideoRef.current!}
             width={canvasSize.width}
             height={canvasSize.height}
             isRecording={isRecording}
@@ -47,12 +71,12 @@ export const RealtimeVideoPanel: React.FC<VideoPanelProps> = ({
             isDisplayPosture={isDisplayPosture}
             clipRegion={CameraRegions.Side}
           />
-        </div>
-        <div>
-          <Title order={3} className="font-semibold mb-2">(2) 上カメラ</Title>
+        </Box>
+        <Box>
+          <Title order={3} className="font-semibold">(2) 上カメラ</Title>
           <LandmarkVideoRealtime
             landmarkType='hand'
-            videoRef={realtimeVideoRef}
+            videoEle={realtimeVideoRef.current!}
             width={canvasSize.width}
             height={canvasSize.height}
             isRecording={isRecording}
@@ -60,12 +84,12 @@ export const RealtimeVideoPanel: React.FC<VideoPanelProps> = ({
             isDisplayPosture={isDisplayPosture}
             clipRegion={CameraRegions.Top}
           />
-        </div>
-        <div>
-          <Title order={3} className="font-semibold mb-2">(3) 患者カメラ</Title>
+        </Box>
+        <Box>
+          <Title order={3} className="font-semibold">(3) 患者カメラ</Title>
           <LandmarkVideoRealtime
-            landmarkType='hand_patient_camera'
-            videoRef={realtimeVideoRef}
+            landmarkType='hand-front'
+            videoEle={realtimeVideoRef.current!}
             width={canvasSize.width}
             height={canvasSize.height}
             isRecording={isRecording}
@@ -73,8 +97,8 @@ export const RealtimeVideoPanel: React.FC<VideoPanelProps> = ({
             isDisplayPosture={isDisplayPosture}
             clipRegion={CameraRegions.Front}
           />
-        </div>
-      </div>
-    </div>
+        </Box>
+      </Group>
+    </Box>
   )
 }
